@@ -19,11 +19,14 @@ import java.util.UUID;
 public class Address {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
     @NotNull
     private String address;
+
+    @NotNull
+    private String district;
 
     @NotNull
     private String province;

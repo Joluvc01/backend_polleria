@@ -16,7 +16,7 @@ import java.util.UUID;
 public class Purchase_detail {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -29,4 +29,6 @@ public class Purchase_detail {
 
     @NotNull
     private Integer quantity;
+
+    private Double total;
 }
