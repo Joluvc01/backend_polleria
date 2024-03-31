@@ -1,8 +1,10 @@
 package com.api_polleria.controller;
 
 import com.api_polleria.entity.Category;
+import com.api_polleria.repository.CategoryRepository;
 import com.api_polleria.service.CategoryService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -24,8 +26,8 @@ public class CategoryController {
     }
 
     @GetMapping
-    public ResponseEntity<?> findAll(){
-        return ResponseEntity.status(HttpStatus.OK).body(categoryService.findAll());
+    public ResponseEntity<?> findAll(Pageable pageable){
+        return ResponseEntity.status(HttpStatus.OK).body(categoryService.findAll(pageable));
     }
 
     @GetMapping("/{id}")

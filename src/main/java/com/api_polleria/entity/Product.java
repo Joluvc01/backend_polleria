@@ -21,6 +21,7 @@ public class Product {
     private UUID id;
 
     @NotNull
+    @Column(unique = true)
     private String name;
 
     @NotNull
@@ -33,7 +34,7 @@ public class Product {
     private String imageUrl;
 
     @NotNull
-    private String status;
+    private Boolean status;
 
     private Double valoration;
 
