@@ -26,5 +26,8 @@ public class Category {
     private String name;
 
     @NotNull
+    private String imageUrl;
+
+    @NotNull
     private Boolean status;
 }
