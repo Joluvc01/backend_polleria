@@ -17,8 +17,8 @@ import java.util.UUID;
 public class User {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private UUID id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
     @NotNull
     @Column(unique = true)
@@ -29,4 +29,7 @@ public class User {
 
     @NotNull
     private String fullname;
+
+    @NotNull
+    private Boolean status;
 }

@@ -6,18 +6,19 @@ import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
 public interface ProductService {
     public Page<Product> findAll(Pageable pageable);
 
-    public Optional<Product> findById(UUID id);
+    public Optional<Product> findById(Long id);
 
     Product findByName(String name);
+
+    List<Product> findByNameContaining(String contain);
 
     List<Product> findByCategoryList_Name(String category);
 
     public Product save(Product product);
 
-    public void deleteById(UUID id);
+    public void deleteById(Long id);
 }

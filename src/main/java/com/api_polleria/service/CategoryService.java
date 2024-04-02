@@ -12,9 +12,9 @@ public interface CategoryService {
 
     public Category findByName(String name);
 
-    public Optional<Category> findById(UUID id);
+    public Optional<Category> findById(Long id);
 
     public Category save(Category category);
 
-    public void deleteById(UUID id);
+    public void deleteById(Long id);
 }

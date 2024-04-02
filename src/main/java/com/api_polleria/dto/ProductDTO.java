@@ -10,7 +10,7 @@ import java.util.UUID;
 @AllArgsConstructor
 public class ProductDTO implements Serializable {
 
-    private UUID id;
+    private Long id;
     private String name;
     private String description;
     private Double price;

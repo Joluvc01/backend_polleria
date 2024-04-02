@@ -16,8 +16,8 @@ import java.util.UUID;
 public class Store {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private UUID id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
     @NotNull
     @Column(unique = true)
@@ -34,4 +34,7 @@ public class Store {
 
     @NotNull
     private String imageUrl;
+
+    @NotNull
+    private Boolean status;
 }

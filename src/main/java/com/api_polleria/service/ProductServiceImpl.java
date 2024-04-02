@@ -23,13 +23,18 @@ public class ProductServiceImpl implements ProductService{
     }
 
     @Override
-    public Optional<Product> findById(UUID id) {
+    public Optional<Product> findById(Long id) {
         return productRepository.findById(id);
     }
 
     @Override
     public Product findByName(String name) {
         return productRepository.findByName(name);
+    }
+
+    @Override
+    public List<Product> findByNameContaining(String contain) {
+        return productRepository.findByNameContaining(contain);
     }
 
     @Override
@@ -43,7 +48,7 @@ public class ProductServiceImpl implements ProductService{
     }
 
     @Override
-    public void deleteById(UUID id) {
+    public void deleteById(Long id) {
         productRepository.deleteById(id);
     }
 }

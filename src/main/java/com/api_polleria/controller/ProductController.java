@@ -1,6 +1,5 @@
 package com.api_polleria.controller;
 
-
 import com.api_polleria.dto.ProductDTO;
 import com.api_polleria.entity.Category;
 import com.api_polleria.entity.Product;
@@ -9,14 +8,14 @@ import com.api_polleria.service.ConvertDTO;
 import com.api_polleria.service.ProductService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
-
 import java.util.*;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/products")
@@ -31,21 +30,41 @@ public class ProductController {
     @Autowired
     private ConvertDTO convertDTO;
 
-    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
-    public ResponseEntity<?> handleMethodArgumentTypeMismatch(MethodArgumentTypeMismatchException ex) {
-        return ResponseEntity.notFound().build();
-    }
-
-    @GetMapping
-    public ResponseEntity<Page<ProductDTO>> findAll(Pageable pageable) {
-        Page<Product> productPage = productService.findAll(pageable);
+    private ResponseEntity<Page<ProductDTO>> createProductPageResponse(List<Product> productList, Pageable pageable) {
+        int start = (int) pageable.getOffset();
+        int end = Math.min((start + pageable.getPageSize()), productList.size());
+        List<Product> subList = productList.subList(start, end);
+        Page<Product> productPage = new PageImpl<>(subList, PageRequest.of(pageable.getPageNumber(), pageable.getPageSize()), productList.size());
         Page<ProductDTO> productDTOPage = productPage.map(convertDTO::convertToProductDTO);
         return ResponseEntity.status(HttpStatus.OK).body(productDTOPage);
     }
 
+    @GetMapping
+    public ResponseEntity<Page<ProductDTO>> findAll(@RequestParam(required = false) String category,
+                                                    @RequestParam(required = false) String product,
+                                                    Pageable pageable) {
+        if (product != null && !product.isEmpty()) {
+            List<Product> productsContain = productService.findByNameContaining(product);
+            if (category != null && !category.isEmpty()) {
+                List<Product> filteredByCategory = productsContain.stream()
+                        .filter(p -> p.getCategoryList().stream().anyMatch(c -> c.getName().equals(category)))
+                        .collect(Collectors.toList());
+                return createProductPageResponse(filteredByCategory, pageable);
+            } else {
+                return createProductPageResponse(productsContain, pageable);
+            }
+        } else if (category != null && !category.isEmpty()) {
+            List<Product> productList = productService.findByCategoryList_Name(category);
+            return createProductPageResponse(productList, pageable);
+        } else {
+            Page<Product> productPage = productService.findAll(pageable);
+            return ResponseEntity.status(HttpStatus.OK).body(productPage.map(convertDTO::convertToProductDTO));
+        }
+    }
+
 
     @GetMapping("/{id}")
-    public ResponseEntity<?> findById(@PathVariable UUID id){
+    public ResponseEntity<?> findById(@PathVariable Long id){
         return productService.findById(id)
                 .map(product -> ResponseEntity.ok(convertDTO.convertToProductDTO(product)))
                 .orElse(ResponseEntity.notFound().build());
@@ -80,7 +99,7 @@ public class ProductController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<?> update(@PathVariable UUID id, @RequestBody ProductDTO productDTO){
+    public ResponseEntity<?> update(@PathVariable Long id, @RequestBody ProductDTO productDTO){
         Optional<Product> optionalProduct = productService.findById(id);
         if (optionalProduct.isEmpty()){
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("El producto no existe");
