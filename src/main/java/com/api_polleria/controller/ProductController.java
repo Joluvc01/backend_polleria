@@ -70,6 +70,19 @@ public class ProductController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+
+    private List<Category> getCategoryListFromNames(Set<String> categoryNames) {
+        List<Category> categories = new ArrayList<>();
+        for (String categoryName : categoryNames) {
+            Category category = categoryService.findByName(categoryName);
+            if (category == null) {
+                return null;
+            }
+            categories.add(category);
+        }
+        return categories;
+    }
+
     @PostMapping
     public ResponseEntity<?> create(@RequestBody ProductDTO productDTO) {
         Product exist = productService.findByName(productDTO.getName());
@@ -77,14 +90,9 @@ public class ProductController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("El producto ya existe");
         }
         Set<String> uniqueCategoryNames = new HashSet<>(productDTO.getCategoryList());
-        List<Category> categories = new ArrayList<>();
-
-        for (String categoryName : uniqueCategoryNames) {
-            Category category = categoryService.findByName(categoryName);
-            if (category == null) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("La categoría '" + categoryName + "' no existe");
-            }
-            categories.add(category);
+        List<Category> categories = getCategoryListFromNames(uniqueCategoryNames);
+        if (categories == null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Al menos una de las categorías no existe");
         }
 
         Product product = new Product();
@@ -105,14 +113,9 @@ public class ProductController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("El producto no existe");
         }
         Set<String> uniqueCategoryNames = new HashSet<>(productDTO.getCategoryList());
-        List<Category> categories = new ArrayList<>();
-
-        for (String categoryName : uniqueCategoryNames) {
-            Category category = categoryService.findByName(categoryName);
-            if (category == null) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("La categoría '" + categoryName + "' no existe");
-            }
-            categories.add(category);
+        List<Category> categories = getCategoryListFromNames(uniqueCategoryNames);
+        if (categories == null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Al menos una de las categorías no existe");
         }
 
         Product product = optionalProduct.get();
@@ -124,8 +127,8 @@ public class ProductController {
         product.setCategoryList(categories);
         productService.save(product);
         return ResponseEntity.status(HttpStatus.CREATED).body("Producto Actualizado");
-
     }
+
 
 
 }
