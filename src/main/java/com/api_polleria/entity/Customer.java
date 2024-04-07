@@ -40,7 +40,7 @@ public class Customer {
     private Boolean status;
 
     @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Address> address;
+    private List<Address> addressList;
 
     @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Purchase> purchaseList;

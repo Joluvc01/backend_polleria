@@ -1,10 +1,9 @@
 package com.api_polleria.service;
 
+import com.api_polleria.dto.CustomerDTO;
 import com.api_polleria.dto.ProductDTO;
 import com.api_polleria.dto.ProductStoreStockDTO;
-import com.api_polleria.entity.Category;
-import com.api_polleria.entity.Product;
-import com.api_polleria.entity.ProductStoreStock;
+import com.api_polleria.entity.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -40,6 +39,28 @@ public class ConvertDTO {
                 product,
                 store,
                 storeStock.getQuantity()
+        );
+    }
+
+    public CustomerDTO convertToCustomerDTO(Customer customer){
+        List<Long> addressList = customer.getAddressList()
+                .stream()
+                .map(Address::getId)
+                .toList();
+        List<Long> favoriteProducts = customer.getFavoriteProducts()
+                .stream()
+                .map(Product::getId)
+                .toList();
+
+        return new CustomerDTO(
+                customer.getId(),
+                customer.getName(),
+                customer.getLastname(),
+                customer.getEmail(),
+                customer.getBirthdate(),
+                customer.getStatus(),
+                addressList,
+                favoriteProducts
         );
     }
 }
