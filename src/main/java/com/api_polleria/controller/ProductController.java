@@ -40,11 +40,20 @@ public class ProductController {
     }
 
     @GetMapping
-    public ResponseEntity<Page<ProductDTO>> findAll(@RequestParam(required = false) String category,
-                                                    @RequestParam(required = false) String product,
-                                                    Pageable pageable) {
+    public ResponseEntity<?> findAll(@RequestParam(required = false) String category,
+                                     @RequestParam(required = false) String product,
+                                     @RequestParam(required = false) String partialProduct,
+                                     Pageable pageable) {
         if (product != null && !product.isEmpty()) {
-            List<Product> productsContain = productService.findByNameContaining(product);
+            Product prod = productService.findByName(product);
+            if (prod == null){
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No existe un producto con ese nombre");
+            }
+            List<Product> productList = new ArrayList<>();
+            productList.add(prod);
+            return createProductPageResponse(productList, pageable);
+        } else if (partialProduct != null && !partialProduct.isEmpty()) {
+            List<Product> productsContain = productService.findByNameContaining(partialProduct);
             if (category != null && !category.isEmpty()) {
                 List<Product> filteredByCategory = productsContain.stream()
                         .filter(p -> p.getCategoryList().stream().anyMatch(c -> c.getName().equals(category)))
@@ -61,6 +70,7 @@ public class ProductController {
             return ResponseEntity.status(HttpStatus.OK).body(productPage.map(convertDTO::convertToProductDTO));
         }
     }
+
 
 
     @GetMapping("/{id}")
