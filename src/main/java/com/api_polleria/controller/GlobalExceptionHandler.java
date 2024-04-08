@@ -1,6 +1,5 @@
 package com.api_polleria.controller;
 
-import ch.qos.logback.core.model.processor.ProcessorException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.mapping.PropertyReferenceException;
 import org.springframework.http.HttpStatus;

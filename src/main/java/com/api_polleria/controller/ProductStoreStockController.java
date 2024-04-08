@@ -1,6 +1,5 @@
 package com.api_polleria.controller;
 
-import com.api_polleria.dto.ProductDTO;
 import com.api_polleria.dto.ProductStoreStockDTO;
 import com.api_polleria.entity.Product;
 import com.api_polleria.entity.ProductStoreStock;

@@ -7,12 +7,10 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
 @Service
-public class CategoryServiceImpl implements CategoryService{
+public class CategoryServiceImpl implements CategoryService {
 
     @Autowired
     private CategoryRepository categoryRepository;
@@ -23,7 +21,9 @@ public class CategoryServiceImpl implements CategoryService{
     }
 
     @Override
-    public Category findByName(String name) { return categoryRepository.findByName(name);}
+    public Category findByName(String name) {
+        return categoryRepository.findByName(name);
+    }
 
     @Override
     public Optional<Category> findById(Long id) {
