@@ -4,7 +4,6 @@ import com.api_polleria.dto.CustomerDTO;
 import com.api_polleria.dto.ProductDTO;
 import com.api_polleria.dto.ProductStoreStockDTO;
 import com.api_polleria.entity.*;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;

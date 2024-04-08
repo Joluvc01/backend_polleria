@@ -6,7 +6,6 @@ import lombok.*;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.UUID;
 
 @Data
 @Builder
@@ -46,8 +45,6 @@ public class Customer {
     private List<Purchase> purchaseList;
 
     @ManyToMany
-    @JoinTable(name = "customer_favorite_product",
-            joinColumns = @JoinColumn(name = "customer_id"),
-            inverseJoinColumns = @JoinColumn(name = "product_id"))
+    @JoinTable(name = "customer_favorite_product", joinColumns = @JoinColumn(name = "customer_id"), inverseJoinColumns = @JoinColumn(name = "product_id"))
     private List<Product> favoriteProducts;
 }

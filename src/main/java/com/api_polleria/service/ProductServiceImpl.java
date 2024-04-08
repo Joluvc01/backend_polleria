@@ -11,10 +11,9 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
 @Service
-public class ProductServiceImpl implements ProductService{
+public class ProductServiceImpl implements ProductService {
 
     @Autowired
     private ProductRepository productRepository;
@@ -73,5 +72,6 @@ public class ProductServiceImpl implements ProductService{
         } else {
             product.setValoration(0.0); // Si no hay valoraciones, establece el promedio como 0
         }
+        productRepository.save(product);
     }
 }
