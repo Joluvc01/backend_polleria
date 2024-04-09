@@ -70,7 +70,7 @@ public class ProductServiceImpl implements ProductService {
             double average = sum / valorationList.size();
             product.setValoration(average);
         } else {
-            product.setValoration(0.0); // Si no hay valoraciones, establece el promedio como 0
+            product.setValoration(0.0);
         }
         productRepository.save(product);
     }

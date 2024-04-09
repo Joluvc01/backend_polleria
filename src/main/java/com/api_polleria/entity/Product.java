@@ -6,6 +6,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
 import java.util.List;
+import java.util.Set;
 
 @Data
 @Builder
@@ -31,7 +32,15 @@ public class Product {
     private Double price;
 
     @NotNull
-    private String imageUrl;
+    private String cardImage;
+
+    @NotNull
+    private String detailImage;
+
+    @ElementCollection
+    @CollectionTable(name = "product_gallery", joinColumns = @JoinColumn(name = "product_id"))
+    @Column(name = "image")
+    private Set<String> galleryImages;
 
     @NotNull
     private Boolean status;

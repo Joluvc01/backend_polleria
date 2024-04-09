@@ -1,5 +1,6 @@
 package com.api_polleria.entity;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
@@ -34,5 +35,6 @@ public class Address {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "customer_id")
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private Customer customer;
 }

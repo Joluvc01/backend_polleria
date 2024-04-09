@@ -71,8 +71,6 @@ public class ProductController {
         }
     }
 
-
-
     @GetMapping("/{id}")
     public ResponseEntity<?> findById(@PathVariable Long id){
         return productService.findById(id)
@@ -109,7 +107,9 @@ public class ProductController {
         product.setName(productDTO.getName());
         product.setDescription(productDTO.getDescription());
         product.setPrice(productDTO.getPrice());
-        product.setImageUrl(productDTO.getImageUrl());
+        product.setCardImage(productDTO.getCardImage());
+        product.setDetailImage(productDTO.getDetailImage());
+        product.setGalleryImages(productDTO.getGalleryImages());
         product.setStatus(true);
         product.setCategoryList(categories);
         productService.save(product);
@@ -132,7 +132,9 @@ public class ProductController {
         product.setName(productDTO.getName());
         product.setDescription(productDTO.getDescription());
         product.setPrice(productDTO.getPrice());
-        product.setImageUrl(productDTO.getImageUrl());
+        product.setCardImage(productDTO.getCardImage());
+        product.setDetailImage(productDTO.getDetailImage());
+        product.setGalleryImages(productDTO.getGalleryImages());
         product.setStatus(productDTO.getStatus());
         product.setCategoryList(categories);
         productService.save(product);

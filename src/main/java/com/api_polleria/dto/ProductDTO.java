@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import java.io.Serializable;
 import java.util.List;
+import java.util.Set;
 
 @Data
 @AllArgsConstructor
@@ -13,7 +14,9 @@ public class ProductDTO implements Serializable {
     private String name;
     private String description;
     private Double price;
-    private String imageUrl;
+    private String cardImage;
+    private String detailImage;
+    private Set<String> galleryImages;
     private Boolean status;
     private Double valoration;
     private List<String> categoryList;
