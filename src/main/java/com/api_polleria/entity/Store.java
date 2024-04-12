@@ -35,4 +35,7 @@ public class Store {
 
     @NotNull
     private Boolean status;
+
+    @NotNull
+    private String phone;
 }

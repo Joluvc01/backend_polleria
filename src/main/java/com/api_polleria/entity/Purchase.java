@@ -35,4 +35,6 @@ public class Purchase {
 
     private Double total;
 
+    private Boolean status;
+
 }
