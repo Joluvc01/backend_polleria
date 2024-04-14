@@ -10,5 +10,7 @@ import java.util.List;
 public interface ProductStoreStockRepository extends JpaRepository<ProductStoreStock, Long> {
     ProductStoreStock findByProductAndStore(Product product, Store store);
 
+
+
     List<ProductStoreStock> findByProduct(Product product);
 }

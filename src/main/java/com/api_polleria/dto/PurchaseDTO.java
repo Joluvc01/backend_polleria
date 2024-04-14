@@ -17,4 +17,6 @@ public class PurchaseDTO {
         private Double igv;
         private Double subtotal;
         private Double total;
+        private Boolean status;
+        private Long store;
 }

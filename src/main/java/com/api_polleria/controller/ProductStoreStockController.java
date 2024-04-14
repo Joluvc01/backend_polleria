@@ -4,7 +4,6 @@ import com.api_polleria.dto.ProductStoreStockDTO;
 import com.api_polleria.entity.Product;
 import com.api_polleria.entity.ProductStoreStock;
 import com.api_polleria.entity.Store;
-import com.api_polleria.service.ConvertDTO;
 import com.api_polleria.service.ProductService;
 import com.api_polleria.service.ProductStoreStockService;
 import com.api_polleria.service.StoreService;
@@ -13,7 +12,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.Optional;
 
 @RestController
@@ -28,38 +26,6 @@ public class ProductStoreStockController {
 
     @Autowired
     private ProductStoreStockService productStoreStockService;
-
-    @Autowired
-    private ConvertDTO convertDTO;
-
-    @GetMapping
-    public ResponseEntity<?> findAll() {
-        List<ProductStoreStock> productStoreStocks = productStoreStockService.findAll();
-        List<ProductStoreStockDTO> productStoreStockDTOS = productStoreStocks.stream()
-                .map(convertDTO::convertToProductStoreStockDTO)
-                .toList();
-        return ResponseEntity.status(HttpStatus.OK).body(productStoreStockDTOS);
-    }
-
-    @GetMapping("/{id}")
-    public ResponseEntity<?> findById(@PathVariable Long id){
-        return productStoreStockService.findById(id)
-                .map(store -> ResponseEntity.ok(convertDTO.convertToProductStoreStockDTO(store)))
-                .orElse(ResponseEntity.notFound().build());
-    }
-
-    @GetMapping("/product/{productId}")
-    public ResponseEntity<?> findStocksByProduct(@PathVariable Long productId){
-        Optional<Product> optionalProduct = productService.findById(productId);
-        if(optionalProduct.isEmpty()){
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("El producto no existe");
-        }
-        List<ProductStoreStock> productStoreStocks = productStoreStockService.findByProduct(optionalProduct.get());
-        List<ProductStoreStockDTO> productStoreStockDTOS = productStoreStocks.stream()
-                .map(convertDTO::convertToProductStoreStockDTO)
-                .toList();
-        return ResponseEntity.status(HttpStatus.OK).body(productStoreStockDTOS);
-    }
 
     @PostMapping
     public ResponseEntity<?> create(@RequestBody ProductStoreStockDTO productStoreStockDTO) {

@@ -37,4 +37,7 @@ public class Purchase {
 
     private Boolean status;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Store store;
+
 }

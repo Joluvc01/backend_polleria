@@ -1,11 +1,14 @@
 package com.api_polleria.controller;
 
 import com.api_polleria.dto.ProductDTO;
+import com.api_polleria.dto.StockDTO;
 import com.api_polleria.entity.Category;
 import com.api_polleria.entity.Product;
+import com.api_polleria.entity.ProductStoreStock;
 import com.api_polleria.service.CategoryService;
 import com.api_polleria.service.ConvertDTO;
 import com.api_polleria.service.ProductService;
+import com.api_polleria.service.ProductStoreStockService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -26,6 +29,9 @@ public class ProductController {
 
     @Autowired
     private CategoryService categoryService;
+
+    @Autowired
+    private ProductStoreStockService productStoreStockService;
 
     @Autowired
     private ConvertDTO convertDTO;
@@ -73,9 +79,22 @@ public class ProductController {
 
     @GetMapping("/{id}")
     public ResponseEntity<?> findById(@PathVariable Long id){
-        return productService.findById(id)
-                .map(product -> ResponseEntity.ok(convertDTO.convertToProductDTO(product)))
-                .orElse(ResponseEntity.notFound().build());
+        Optional<Product> product = productService.findById(id);
+        if (product.isEmpty()){
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("El producto no existe");
+        }
+        Product prod = product.get();
+        List<ProductStoreStock> storeStocks = productStoreStockService.findByProduct(prod);
+        List<StockDTO> stock = storeStocks
+                .stream()
+                .map(storeStock -> new StockDTO(
+                        storeStock.getStore().getName(),
+                        storeStock.getQuantity()
+                ))
+                .toList();
+        ProductDTO productDTO = convertDTO.convertToProductDTO(prod);
+        productDTO.setStock(stock);
+        return ResponseEntity.status(HttpStatus.OK).body(productDTO);
     }
 
 

@@ -2,12 +2,10 @@ package com.api_polleria.service;
 
 import com.api_polleria.dto.*;
 import com.api_polleria.entity.*;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -30,19 +28,8 @@ public class ConvertDTO {
                 galleryImages,
                 product.getStatus(),
                 product.getValoration(),
-                categoryList
-        );
-    }
-
-    public ProductStoreStockDTO convertToProductStoreStockDTO(ProductStoreStock storeStock){
-        Long product = (storeStock.getProduct() != null) ? storeStock.getProduct().getId() : null;
-        Long store = (storeStock.getStore() != null) ? storeStock.getStore().getId() : null;
-
-        return new ProductStoreStockDTO(
-                storeStock.getId(),
-                product,
-                store,
-                storeStock.getQuantity()
+                categoryList,
+                null
         );
     }
 
@@ -103,7 +90,9 @@ public class ConvertDTO {
                 customer,
                 purchase.getIgv(),
                 purchase.getSubtotal(),
-                purchase.getTotal()
+                purchase.getTotal(),
+                purchase.getStatus(),
+                purchase.getStore().getId()
         );
     }
 

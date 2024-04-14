@@ -2,14 +2,8 @@ package com.api_polleria.controller;
 
 import com.api_polleria.dto.PurchaseDTO;
 import com.api_polleria.dto.Purchase_detailDTO;
-import com.api_polleria.entity.Customer;
-import com.api_polleria.entity.Product;
-import com.api_polleria.entity.Purchase;
-import com.api_polleria.entity.Purchase_detail;
-import com.api_polleria.service.ConvertDTO;
-import com.api_polleria.service.CustomerService;
-import com.api_polleria.service.ProductService;
-import com.api_polleria.service.PurchaseService;
+import com.api_polleria.entity.*;
+import com.api_polleria.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -34,6 +28,9 @@ public class PurchaseController {
     private ProductService productService;
 
     @Autowired
+    private StoreService storeService;
+
+    @Autowired
     private ConvertDTO convertDTO;
 
     @GetMapping
@@ -55,10 +52,17 @@ public class PurchaseController {
         if (optionalCustomer.isEmpty()) {
             return ResponseEntity.badRequest().body("El cliente no existe");
         }
+
+        Optional<Store> optionalStore = storeService.findById(purchaseDTO.getStore());
+        if (optionalStore.isEmpty()) {
+            return ResponseEntity.badRequest().body("La tienda no existe");
+        }
+
         Purchase purchase = new Purchase();
         LocalDate date = LocalDate.now(ZoneId.of("America/Lima"));
         purchase.setDate(date);
         purchase.setCustomer(optionalCustomer.get());
+        purchase.setStore(optionalStore.get());
 
         Map<Long, Purchase_detail> purchaseDetailMap = new HashMap<>();
         double total = 0;
@@ -95,9 +99,22 @@ public class PurchaseController {
         purchase.setTotal(total);
         purchase.setIgv(igv);
         purchase.setSubtotal(subtotal);
+        purchase.setStatus(false);
         purchase.setDetails(new ArrayList<>(purchaseDetailMap.values()));
         purchaseService.save(purchase);
-        return ResponseEntity.ok("Compra guardada exitosamente");
+        return ResponseEntity.ok(purchase.getId());
+    }
+
+    @PostMapping("/complete/{id}")
+    public ResponseEntity<?> completePurchase(@PathVariable Long id){
+        Optional<Purchase> optionalPurchase = purchaseService.findById(id);
+        if (optionalPurchase.isEmpty()) {
+            return ResponseEntity.badRequest().body("La compra no existe");
+        }
+        Purchase purchase = optionalPurchase.get();
+        purchase.setStatus(true);
+        purchaseService.save(purchase);
+        return ResponseEntity.ok("Compra completada exitosamente");
     }
 
 }
