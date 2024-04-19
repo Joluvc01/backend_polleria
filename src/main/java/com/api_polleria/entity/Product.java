@@ -2,6 +2,7 @@ package com.api_polleria.entity;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
@@ -22,6 +23,7 @@ public class Product {
     private Long id;
 
     @NotNull
+    @NotBlank
     @Column(unique = true)
     private String name;
 
