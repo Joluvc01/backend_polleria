@@ -31,6 +31,9 @@ public class PurchaseController {
     private StoreService storeService;
 
     @Autowired
+    private ProductStoreStockService productStoreStockService;
+
+    @Autowired
     private ConvertDTO convertDTO;
 
     @GetMapping
@@ -113,6 +116,22 @@ public class PurchaseController {
         }
         Purchase purchase = optionalPurchase.get();
         purchase.setStatus(true);
+
+        List<Purchase_detail> details = purchase.getDetails();
+
+        for (Purchase_detail detail : details) {
+            Product product = detail.getProduct();
+            int quantity = detail.getQuantity();
+            ProductStoreStock stock = productStoreStockService.findByProductAndStore(product, purchase.getStore());
+
+            if (stock != null) {
+                stock.setQuantity(stock.getQuantity() - quantity);
+                productStoreStockService.save(stock);
+            } else {
+                return ResponseEntity.badRequest().body("El producto no existe en la tienda");
+            }
+        }
+
         purchaseService.save(purchase);
         return ResponseEntity.ok("Compra completada exitosamente");
     }

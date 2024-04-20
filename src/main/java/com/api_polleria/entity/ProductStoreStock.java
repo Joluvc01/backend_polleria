@@ -1,7 +1,7 @@
 package com.api_polleria.entity;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotEmpty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -28,7 +28,7 @@ public class ProductStoreStock {
     @JoinColumn(name = "store_id")
     private Store store;
 
-    @NotNull
+    @NotEmpty
     private int quantity;
 
 }

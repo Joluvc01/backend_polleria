@@ -2,7 +2,7 @@ package com.api_polleria.entity;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotEmpty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -21,16 +21,16 @@ public class Address {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotNull
+    @NotEmpty
     private String address;
 
-    @NotNull
+    @NotEmpty
     private String district;
 
-    @NotNull
+    @NotEmpty
     private String province;
 
-    @NotNull
+    @NotEmpty
     private String state;
 
     @ManyToOne(fetch = FetchType.LAZY)

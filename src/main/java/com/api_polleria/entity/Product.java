@@ -2,8 +2,7 @@ package com.api_polleria.entity;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotEmpty;
 import lombok.*;
 
 import java.util.List;
@@ -22,21 +21,18 @@ public class Product {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotNull
-    @NotBlank
+    @NotEmpty
     @Column(unique = true)
     private String name;
 
-    @NotNull
+    @NotEmpty
     private String description;
 
-    @NotNull
+    @NotEmpty
     private Double price;
 
-    @NotNull
     private String cardImage;
 
-    @NotNull
     private String detailImage;
 
     @ElementCollection
@@ -44,7 +40,7 @@ public class Product {
     @Column(name = "image")
     private Set<String> galleryImages;
 
-    @NotNull
+    @NotEmpty
     private Boolean status;
 
     private Double valoration;

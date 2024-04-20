@@ -1,7 +1,7 @@
 package com.api_polleria.entity;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotEmpty;
 import lombok.*;
 
 @Data
@@ -17,25 +17,24 @@ public class Store {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotNull
+    @NotEmpty
     @Column(unique = true)
     private String name;
 
-    @NotNull
+    @NotEmpty
     private String address;
 
-    @NotNull
+    @NotEmpty
     private String longitude;
 
-    @NotNull
+    @NotEmpty
     private String latitude;
 
-    @NotNull
     private String imageUrl;
 
-    @NotNull
+    @NotEmpty
     private Boolean status;
 
-    @NotNull
+    @NotEmpty
     private String phone;
 }
