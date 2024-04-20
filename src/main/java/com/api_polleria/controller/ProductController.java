@@ -46,36 +46,40 @@ public class ProductController {
     }
 
     @GetMapping
-    public ResponseEntity<?> findAll(@RequestParam(required = false) String category,
-                                     @RequestParam(required = false) String product,
-                                     @RequestParam(required = false) String partialProduct,
-                                     Pageable pageable) {
+    public ResponseEntity<?> findAll(
+            @RequestParam(required = false) String category,
+            @RequestParam(required = false) String product,
+            @RequestParam(required = false) String partialProduct,
+            Pageable pageable) {
+
         if (product != null && !product.isEmpty()) {
             Product prod = productService.findByName(product);
-            if (prod == null){
+            if (prod == null) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No existe un producto con ese nombre");
             }
-            List<Product> productList = new ArrayList<>();
-            productList.add(prod);
-            return createProductPageResponse(productList, pageable);
-        } else if (partialProduct != null && !partialProduct.isEmpty()) {
-            List<Product> productsContain = productService.findByNameContaining(partialProduct);
-            if (category != null && !category.isEmpty()) {
-                List<Product> filteredByCategory = productsContain.stream()
-                        .filter(p -> p.getCategoryList().stream().anyMatch(c -> c.getName().equals(category)))
-                        .collect(Collectors.toList());
-                return createProductPageResponse(filteredByCategory, pageable);
-            } else {
-                return createProductPageResponse(productsContain, pageable);
-            }
+            return createProductPageResponse(Collections.singletonList(prod), pageable);
+        }
+
+        List<Product> productList;
+
+        if (partialProduct != null && !partialProduct.isEmpty()) {
+            productList = productService.findByNameContaining(partialProduct);
         } else if (category != null && !category.isEmpty()) {
-            List<Product> productList = productService.findByCategoryList_Name(category);
-            return createProductPageResponse(productList, pageable);
+            productList = productService.findByCategoryList_Name(category);
         } else {
             Page<Product> productPage = productService.findAll(pageable);
             return ResponseEntity.status(HttpStatus.OK).body(productPage.map(convertDTO::convertToProductDTO));
         }
+
+        if (category != null && !category.isEmpty()) {
+            productList = productList.stream()
+                    .filter(p -> p.getCategoryList().stream().anyMatch(c -> c.getName().equals(category)))
+                    .collect(Collectors.toList());
+        }
+
+        return createProductPageResponse(productList, pageable);
     }
+
 
     @GetMapping("/{id}")
     public ResponseEntity<?> findById(@PathVariable Long id){

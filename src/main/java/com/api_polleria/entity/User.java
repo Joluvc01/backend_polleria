@@ -1,12 +1,13 @@
 package com.api_polleria.entity;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotEmpty;
 import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
+import java.util.Collections;
 
 @Data
 @Builder
@@ -21,22 +22,22 @@ public class User implements UserDetails {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotNull
+    @NotEmpty
     @Column(unique = true)
     private String username;
 
-    @NotNull
+    @NotEmpty
     private String password;
 
-    @NotNull
+    @NotEmpty
     private String fullname;
 
-    @NotNull
+    @NotEmpty
     private Boolean status;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return null;
+        return Collections.emptyList();
     }
 
     @Override
@@ -56,6 +57,7 @@ public class User implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return false;
+        return status == null || status;
     }
+
 }

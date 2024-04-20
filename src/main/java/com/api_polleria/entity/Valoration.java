@@ -3,7 +3,7 @@ package com.api_polleria.entity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotEmpty;
 import lombok.*;
 
 import java.time.LocalDate;
@@ -21,14 +21,14 @@ public class Valoration {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotNull
+    @NotEmpty
     @Min(1)
     @Max(5)
     private Integer valoration;
 
     private String review;
 
-    @NotNull
+    @NotEmpty
     private LocalDate date;
 
     @ManyToOne(fetch = FetchType.LAZY)
