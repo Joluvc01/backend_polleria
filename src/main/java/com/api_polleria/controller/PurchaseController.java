@@ -118,6 +118,7 @@ public class PurchaseController {
         purchase.setStatus(true);
 
         List<Purchase_detail> details = purchase.getDetails();
+        List<String> insufficientStockProducts = new ArrayList<>();
 
         for (Purchase_detail detail : details) {
             Product product = detail.getProduct();
@@ -125,11 +126,21 @@ public class PurchaseController {
             ProductStoreStock stock = productStoreStockService.findByProductAndStore(product, purchase.getStore());
 
             if (stock != null) {
+                int updateStock = stock.getQuantity() - quantity;
+                if (updateStock < 0) {
+                    insufficientStockProducts.add("Stock Faltante del producto '"+ product.getName() + "' : "+ updateStock*-1);
+                    continue;
+                }
                 stock.setQuantity(stock.getQuantity() - quantity);
                 productStoreStockService.save(stock);
+
             } else {
                 return ResponseEntity.badRequest().body("El producto no existe en la tienda");
             }
+        }
+
+        if (!insufficientStockProducts.isEmpty()) {
+            return ResponseEntity.badRequest().body(insufficientStockProducts);
         }
 
         purchaseService.save(purchase);

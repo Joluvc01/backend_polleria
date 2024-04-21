@@ -2,8 +2,10 @@ package com.api_polleria.entity;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
@@ -32,12 +34,12 @@ public class User implements UserDetails {
     @NotEmpty
     private String fullname;
 
-    @NotEmpty
+    @NotNull
     private Boolean status;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return Collections.emptyList();
+        return Collections.singletonList(new SimpleGrantedAuthority("ADMIN"));
     }
 
     @Override

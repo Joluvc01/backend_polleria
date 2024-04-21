@@ -3,10 +3,11 @@ package com.api_polleria.service;
 import com.api_polleria.entity.Customer;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.userdetails.UserDetailsService;
 
 import java.util.Optional;
 
-public interface CustomerService {
+public interface CustomerService extends UserDetailsService {
     public Page<Customer> findAll(Pageable pageable);
 
     public Optional<Customer> findById(Long id);

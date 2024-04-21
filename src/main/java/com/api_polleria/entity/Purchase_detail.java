@@ -1,7 +1,9 @@
 package com.api_polleria.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
 @Data
@@ -25,7 +27,8 @@ public class Purchase_detail {
     @JoinColumn(name = "purchase_id")
     private Purchase purchase;
 
-    @NotEmpty
+    @Min(1)
+    @NotNull
     private Integer quantity;
 
     private Double total;

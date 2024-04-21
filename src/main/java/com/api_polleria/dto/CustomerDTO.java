@@ -15,7 +15,7 @@ public class CustomerDTO {
     private String lastname;
     private String email;
     private LocalDate birthdate;
-    private Boolean status;
+    private String status;
     private List<Long> addressList;
     private List<Long> favoriteProducts;
 }

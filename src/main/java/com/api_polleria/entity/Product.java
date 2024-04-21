@@ -3,6 +3,7 @@ package com.api_polleria.entity;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
 import java.util.List;
@@ -28,7 +29,7 @@ public class Product {
     @NotEmpty
     private String description;
 
-    @NotEmpty
+    @NotNull
     private Double price;
 
     private String cardImage;
@@ -40,7 +41,7 @@ public class Product {
     @Column(name = "image")
     private Set<String> galleryImages;
 
-    @NotEmpty
+    @NotNull
     private Boolean status;
 
     private Double valoration;

@@ -6,6 +6,7 @@ import com.api_polleria.dto.RegisterCustomerDTO;
 import com.api_polleria.entity.Address;
 import com.api_polleria.entity.Customer;
 import com.api_polleria.entity.Product;
+import com.api_polleria.entity.Status;
 import com.api_polleria.service.ConvertDTO;
 import com.api_polleria.service.CustomerService;
 import com.api_polleria.service.ProductService;
@@ -14,6 +15,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Optional;
@@ -31,6 +33,9 @@ public class CustomerController {
     @Autowired
     private ConvertDTO convertDTO;
 
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
     @GetMapping
     public ResponseEntity<?> findAll(Pageable pageable){
         Page<Customer> customerPage = customerService.findAll(pageable);
@@ -44,23 +49,6 @@ public class CustomerController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    @PostMapping
-    public ResponseEntity<?> create(@RequestBody RegisterCustomerDTO customerDTO){
-        Optional<Customer> optionalCustomer = customerService.findByEmail(customerDTO.getEmail());
-        if(optionalCustomer.isPresent()){
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("El email ya esta en uso");
-        }
-        Customer customer = new Customer();
-        customer.setName(customerDTO.getName());
-        customer.setLastname(customerDTO.getLastname());
-        customer.setEmail(customerDTO.getEmail());
-        customer.setPassword(customerDTO.getPassword());
-        customer.setBirthdate(customerDTO.getBirthdate());
-        customer.setStatus(true);
-        customerService.save(customer);
-        return ResponseEntity.status(HttpStatus.CREATED).body("Cliente Creado");
-    }
-
     @PutMapping("/{id}")
     public ResponseEntity<?> update(@PathVariable Long id, @RequestBody CustomerDTO customerDTO){
         Optional<Customer> optionalCustomer = customerService.findById(id);
@@ -72,7 +60,7 @@ public class CustomerController {
         customer.setLastname(customerDTO.getLastname());
         customer.setEmail(customerDTO.getEmail());
         customer.setBirthdate(customerDTO.getBirthdate());
-        customer.setStatus(customerDTO.getStatus());
+        customer.setStatus(Status.valueOf(customerDTO.getStatus()));
         customerService.save(customer);
         return ResponseEntity.status(HttpStatus.CREATED).body("Cliente Actualizado");
     }
@@ -222,6 +210,26 @@ public class CustomerController {
         customer.getAddressList().remove(address);
         customerService.save(customer);
         return ResponseEntity.status(HttpStatus.OK).body("Direccion Eliminada");
+    }
+
+    @PostMapping("/change-password/{id}")
+    public ResponseEntity<?> changePassword(@PathVariable Long id, @RequestBody String newPassword) {
+        Optional<Customer> optionalCustomer = customerService.findById(id);
+
+        if (optionalCustomer.isPresent()) {
+            Customer customer = optionalCustomer.get();
+
+            if (passwordEncoder.matches(newPassword, customer.getPassword())) {
+                return ResponseEntity.badRequest().body("La nueva contraseña no puede ser igual a la contraseña actual");
+            }
+
+            customer.setPassword(passwordEncoder.encode(newPassword));
+            customerService.save(customer);
+
+            return ResponseEntity.ok("Contraseña cambiada exitosamente");
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Usuario no encontrado");
+        }
     }
 
 }

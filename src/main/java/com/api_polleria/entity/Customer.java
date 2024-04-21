@@ -2,8 +2,10 @@ package com.api_polleria.entity;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.time.LocalDate;
@@ -37,11 +39,11 @@ public class Customer implements UserDetails {
     @NotEmpty
     private String password;
 
-    @NotEmpty
+    @NotNull
     private LocalDate birthdate;
 
-    @NotEmpty
-    private Boolean status;
+    @NotNull
+    private Status status;
 
     @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Address> addressList;
@@ -55,7 +57,7 @@ public class Customer implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return Collections.emptyList();
+        return Collections.singletonList(new SimpleGrantedAuthority("CUSTOMER"));
     }
 
     @Override
@@ -80,9 +82,8 @@ public class Customer implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return status == null || status;
+        return status.equals(Status.ACTIVE);
     }
-
 
 }
 

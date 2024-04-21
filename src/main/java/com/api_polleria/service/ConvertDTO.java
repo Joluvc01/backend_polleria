@@ -49,7 +49,7 @@ public class ConvertDTO {
                 customer.getLastname(),
                 customer.getEmail(),
                 customer.getBirthdate(),
-                customer.getStatus(),
+                customer.getStatus().name(),
                 addressList,
                 favoriteProducts
         );
@@ -96,4 +96,12 @@ public class ConvertDTO {
         );
     }
 
+    public UserDTO convertToUserDTO(User user) {
+        return new UserDTO(
+                user.getId(),
+                user.getUsername(),
+                user.getFullname(),
+                user.getStatus()
+        );
+    }
 }

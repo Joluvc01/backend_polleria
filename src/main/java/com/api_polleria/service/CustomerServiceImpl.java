@@ -5,6 +5,8 @@ import com.api_polleria.repository.CustomerRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -38,5 +40,10 @@ public class CustomerServiceImpl implements CustomerService{
     @Override
     public void deleteById(Long id) {
         customerRepository.deleteById(id);
+    }
+
+    @Override
+    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+        return customerRepository.findByEmail(email).orElseThrow();
     }
 }

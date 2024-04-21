@@ -2,6 +2,7 @@ package com.api_polleria.entity;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
 @Data
@@ -24,6 +25,6 @@ public class Category {
     @NotEmpty
     private String imageUrl;
 
-    @NotEmpty
+    @NotNull
     private Boolean status;
 }
