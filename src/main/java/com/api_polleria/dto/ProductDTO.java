@@ -6,12 +6,11 @@ import lombok.Data;
 
 import java.io.Serializable;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 @Data
 @AllArgsConstructor
-public class ProductDTO implements Serializable {
+public class ProductDTO implements Serializable{
 
     private Long id;
     private String name;

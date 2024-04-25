@@ -4,10 +4,8 @@ import com.api_polleria.dto.UserDTO;
 import com.api_polleria.entity.User;
 import com.api_polleria.service.ConvertDTO;
 import com.api_polleria.service.UserService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -18,14 +16,14 @@ import java.util.Optional;
 @RequestMapping("/users")
 public class UserController {
 
-    @Autowired
-    private PasswordEncoder passwordEncoder;
+    private final UserService userService;
 
-    @Autowired
-    private UserService userService;
+    private final ConvertDTO convertDTO;
 
-    @Autowired
-    private ConvertDTO convertDTO;
+    public UserController(UserService userService, ConvertDTO convertDTO) {
+        this.userService = userService;
+        this.convertDTO = convertDTO;
+    }
 
     @GetMapping()
     public ResponseEntity<?> findAll() {
@@ -53,7 +51,8 @@ public class UserController {
 
         User newuser = new User();
         newuser.setUsername(user.getUsername());
-        newuser.setPassword(passwordEncoder.encode(user.getPassword()));
+//        newuser.setPassword(passwordEncoder.encode(user.getPassword()));
+        newuser.setPassword(user.getPassword());
         newuser.setFullname(user.getFullname());
         newuser.setStatus(true);
 
@@ -87,24 +86,24 @@ public class UserController {
         }
     }
 
-    @PostMapping("/change-password/{id}")
-    public ResponseEntity<?> changePassword(@PathVariable Long id, @RequestBody String newPassword) {
-        Optional<User> optionalUser = userService.findById(id);
-
-        if (optionalUser.isPresent()) {
-            User user = optionalUser.get();
-
-            if (passwordEncoder.matches(newPassword, user.getPassword())) {
-                return ResponseEntity.badRequest().body("La nueva contraseña no puede ser igual a la contraseña actual");
-            }
-
-            user.setPassword(passwordEncoder.encode(newPassword));
-            userService.save(user);
-
-            return ResponseEntity.ok("Contraseña cambiada exitosamente");
-        } else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Usuario no encontrado");
-        }
-    }
+//    @PostMapping("/change-password/{id}")
+//    public ResponseEntity<?> changePassword(@PathVariable Long id, @RequestBody String newPassword) {
+//        Optional<User> optionalUser = userService.findById(id);
+//
+//        if (optionalUser.isPresent()) {
+//            User user = optionalUser.get();
+//
+//            if (passwordEncoder.matches(newPassword, user.getPassword())) {
+//                return ResponseEntity.badRequest().body("La nueva contraseña no puede ser igual a la contraseña actual");
+//            }
+//
+//            user.setPassword(passwordEncoder.encode(newPassword));
+//            userService.save(user);
+//
+//            return ResponseEntity.ok("Contraseña cambiada exitosamente");
+//        } else {
+//            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Usuario no encontrado");
+//        }
+//    }
 }
 

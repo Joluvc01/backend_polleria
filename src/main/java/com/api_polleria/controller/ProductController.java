@@ -45,6 +45,18 @@ public class ProductController {
         return ResponseEntity.status(HttpStatus.OK).body(productDTOPage);
     }
 
+    private List<Category> getCategoryListFromNames(Set<String> categoryNames) {
+        List<Category> categories = new ArrayList<>();
+        for (String categoryName : categoryNames) {
+            Category category = categoryService.findByName(categoryName);
+            if (category == null) {
+                return null;
+            }
+            categories.add(category);
+        }
+        return categories;
+    }
+
     @GetMapping
     public ResponseEntity<?> findAll(
             @RequestParam(required = false) String category,
@@ -80,7 +92,6 @@ public class ProductController {
         return createProductPageResponse(productList, pageable);
     }
 
-
     @GetMapping("/{id}")
     public ResponseEntity<?> findById(@PathVariable Long id){
         Optional<Product> product = productService.findById(id);
@@ -99,19 +110,6 @@ public class ProductController {
         ProductDTO productDTO = convertDTO.convertToProductDTO(prod);
         productDTO.setStock(stock);
         return ResponseEntity.status(HttpStatus.OK).body(productDTO);
-    }
-
-
-    private List<Category> getCategoryListFromNames(Set<String> categoryNames) {
-        List<Category> categories = new ArrayList<>();
-        for (String categoryName : categoryNames) {
-            Category category = categoryService.findByName(categoryName);
-            if (category == null) {
-                return null;
-            }
-            categories.add(category);
-        }
-        return categories;
     }
 
     @PostMapping

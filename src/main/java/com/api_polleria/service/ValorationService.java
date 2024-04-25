@@ -1,16 +1,14 @@
 package com.api_polleria.service;
 
-import com.api_polleria.entity.Product;
 import com.api_polleria.entity.Valoration;
-import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import java.util.Optional;
 
 public interface ValorationService {
-    public List<Valoration> findAll();
 
     public Optional<Valoration> findById(Long id);
-
-    public List<Valoration> findByProduct(Product product);
+    public Page<Valoration> findByProductId(Long productId, Pageable pageable);
 
     public Valoration save(Valoration valoration);
 

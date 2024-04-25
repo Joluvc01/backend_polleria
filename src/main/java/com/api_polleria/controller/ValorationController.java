@@ -8,56 +8,39 @@ import com.api_polleria.service.ConvertDTO;
 import com.api_polleria.service.CustomerService;
 import com.api_polleria.service.ProductService;
 import com.api_polleria.service.ValorationService;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.time.ZoneId;
-import java.util.List;
 import java.util.Optional;
 
 @RestController
 @RequestMapping("/valorations")
 public class ValorationController {
 
-    @Autowired
-    private ValorationService valorationService;
+    private final ValorationService valorationService;
 
-    @Autowired
-    private ProductService productService;
+    private final ProductService productService;
 
-    @Autowired
-    private CustomerService customerService;
+    private final CustomerService customerService;
 
-    @Autowired
-    private ConvertDTO convertDTO;
+    private final ConvertDTO convertDTO;
 
-    @GetMapping
-    public ResponseEntity<?> findAll() {
-        return ResponseEntity.ok(valorationService.findAll()
-                .stream()
-                .map(convertDTO::convertToValorationDTO)
-                .toList());
+    public ValorationController(ValorationService valorationService, ProductService productService, CustomerService customerService, ConvertDTO convertDTO) {
+        this.valorationService = valorationService;
+        this.productService = productService;
+        this.customerService = customerService;
+        this.convertDTO = convertDTO;
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<?> findById(@PathVariable Long id) {
-        return valorationService.findById(id)
-                .map(valoration -> ResponseEntity.ok(convertDTO.convertToValorationDTO(valoration)))
-                .orElse(ResponseEntity.notFound().build());
-    }
-
-    @GetMapping("/product/{id}")
-    public ResponseEntity<?> findByProductId(@PathVariable Long id) {
-        Optional<Product> optionalValoration = productService.findById(id);
-        if (optionalValoration.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("El producto no existe");
-        }
-
-        List<Valoration> valorations = valorationService.findByProduct(optionalValoration.get());
-        return ResponseEntity.ok(valorations);
+    @GetMapping("/{productId}")
+    public ResponseEntity<?> findByProductId(@PathVariable Long productId, Pageable pageable) {
+        Page<Valoration> valorationPage = valorationService.findByProductId(productId, pageable);
+        return ResponseEntity.ok(valorationPage.map(convertDTO::convertToValorationDTO));
     }
 
     @PostMapping()

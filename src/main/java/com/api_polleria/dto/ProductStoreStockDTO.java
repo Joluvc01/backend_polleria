@@ -1,13 +1,13 @@
 package com.api_polleria.dto;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
+import java.io.Serializable;
+
 @Data
 @AllArgsConstructor
-public class ProductStoreStockDTO {
+public class ProductStoreStockDTO implements Serializable {
 
     private Long product;
     private Long store;

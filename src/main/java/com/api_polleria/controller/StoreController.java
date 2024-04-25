@@ -2,7 +2,6 @@ package com.api_polleria.controller;
 
 import com.api_polleria.entity.Store;
 import com.api_polleria.service.StoreService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,8 +13,11 @@ import java.util.Optional;
 @RequestMapping("/stores")
 public class StoreController {
 
-    @Autowired
-    private StoreService storeService;
+    private final StoreService storeService;
+
+    public StoreController(StoreService storeService) {
+        this.storeService = storeService;
+    }
 
     @GetMapping
     public ResponseEntity<?> findAll(Pageable pageable) {

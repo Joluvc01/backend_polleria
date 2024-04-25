@@ -1,5 +1,6 @@
 package com.api_polleria.service;
 
+import com.api_polleria.entity.Address;
 import com.api_polleria.entity.Customer;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -17,4 +18,6 @@ public interface CustomerService extends UserDetailsService {
     public Customer save(Customer customer);
 
     public void deleteById(Long id);
+
+    public boolean addressExists(Customer customer, Long addressId, Address address);
 }

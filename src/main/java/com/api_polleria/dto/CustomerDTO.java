@@ -3,12 +3,12 @@ package com.api_polleria.dto;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
+import java.io.Serializable;
 import java.time.LocalDate;
-import java.util.List;
 
 @Data
 @AllArgsConstructor
-public class CustomerDTO {
+public class CustomerDTO implements Serializable {
 
     private Long id;
     private String name;
@@ -16,6 +16,4 @@ public class CustomerDTO {
     private String email;
     private LocalDate birthdate;
     private String status;
-    private List<Long> addressList;
-    private List<Long> favoriteProducts;
 }

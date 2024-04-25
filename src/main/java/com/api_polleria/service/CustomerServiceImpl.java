@@ -1,5 +1,6 @@
 package com.api_polleria.service;
 
+import com.api_polleria.entity.Address;
 import com.api_polleria.entity.Customer;
 import com.api_polleria.repository.CustomerRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,6 +41,15 @@ public class CustomerServiceImpl implements CustomerService{
     @Override
     public void deleteById(Long id) {
         customerRepository.deleteById(id);
+    }
+
+    public boolean addressExists(Customer customer, Long addressId, Address newAddress) {
+        return customer.getAddressList().stream()
+                .filter(address -> !address.getId().equals(addressId))
+                .anyMatch(address -> address.getAddress().equals(newAddress.getAddress()) &&
+                        address.getDistrict().equals(newAddress.getDistrict()) &&
+                        address.getProvince().equals(newAddress.getProvince()) &&
+                        address.getState().equals(newAddress.getState()));
     }
 
     @Override

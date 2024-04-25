@@ -1,12 +1,13 @@
 package com.api_polleria.controller;
 
+import com.api_polleria.dto.MinusStockDTO;
 import com.api_polleria.dto.PurchaseDTO;
 import com.api_polleria.dto.Purchase_detailDTO;
 import com.api_polleria.entity.*;
 import com.api_polleria.service.*;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,23 +19,21 @@ import java.util.*;
 @RequestMapping("/purchases")
 public class PurchaseController {
 
-    @Autowired
-    private PurchaseService purchaseService;
+    private final PurchaseService purchaseService;
+    private final CustomerService customerService;
+    private final ProductService productService;
+    private final StoreService storeService;
+    private final ProductStoreStockService productStoreStockService;
+    private final ConvertDTO convertDTO;
 
-    @Autowired
-    private CustomerService customerService;
-
-    @Autowired
-    private ProductService productService;
-
-    @Autowired
-    private StoreService storeService;
-
-    @Autowired
-    private ProductStoreStockService productStoreStockService;
-
-    @Autowired
-    private ConvertDTO convertDTO;
+    public PurchaseController(PurchaseService purchaseService, CustomerService customerService, ProductService productService, StoreService storeService, ProductStoreStockService productStoreStockService, ConvertDTO convertDTO) {
+        this.purchaseService = purchaseService;
+        this.customerService = customerService;
+        this.productService = productService;
+        this.storeService = storeService;
+        this.productStoreStockService = productStoreStockService;
+        this.convertDTO = convertDTO;
+    }
 
     @GetMapping
     public ResponseEntity<?> findAll(Pageable pageable){
@@ -112,13 +111,13 @@ public class PurchaseController {
     public ResponseEntity<?> completePurchase(@PathVariable Long id){
         Optional<Purchase> optionalPurchase = purchaseService.findById(id);
         if (optionalPurchase.isEmpty()) {
-            return ResponseEntity.badRequest().body("La compra no existe");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("La compra no existe");
         }
         Purchase purchase = optionalPurchase.get();
         purchase.setStatus(true);
 
         List<Purchase_detail> details = purchase.getDetails();
-        List<String> insufficientStockProducts = new ArrayList<>();
+        List<MinusStockDTO> insufficientStockProducts = new ArrayList<>();
 
         for (Purchase_detail detail : details) {
             Product product = detail.getProduct();
@@ -128,19 +127,22 @@ public class PurchaseController {
             if (stock != null) {
                 int updateStock = stock.getQuantity() - quantity;
                 if (updateStock < 0) {
-                    insufficientStockProducts.add("Stock Faltante del producto '"+ product.getName() + "' : "+ updateStock*-1);
+                    insufficientStockProducts.add(new MinusStockDTO(product.getName(), updateStock*-1));
                     continue;
                 }
                 stock.setQuantity(stock.getQuantity() - quantity);
                 productStoreStockService.save(stock);
 
             } else {
-                return ResponseEntity.badRequest().body("El producto no existe en la tienda");
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("El producto no existe en la tienda");
             }
         }
 
         if (!insufficientStockProducts.isEmpty()) {
-            return ResponseEntity.badRequest().body(insufficientStockProducts);
+            Map<String, Object> response = new HashMap<>();
+            response.put("message", "Productos con stock insuficiente");
+            response.put("products", insufficientStockProducts);
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
         }
 
         purchaseService.save(purchase);

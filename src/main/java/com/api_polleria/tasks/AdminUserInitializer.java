@@ -11,12 +11,10 @@ import org.springframework.stereotype.Component;
 public class AdminUserInitializer implements CommandLineRunner {
 
     private final UserService userService;
-    private final PasswordEncoder passwordEncoder;
 
     @Autowired
-    public AdminUserInitializer(UserService userService, PasswordEncoder passwordEncoder) {
+    public AdminUserInitializer(UserService userService) {
         this.userService = userService;
-        this.passwordEncoder = passwordEncoder;
     }
 
     @Override
@@ -24,8 +22,9 @@ public class AdminUserInitializer implements CommandLineRunner {
         if (userService.findByUsername("admin").isEmpty()) {
             User adminUser = new User();
             adminUser.setUsername("admin");
-            adminUser.setPassword(passwordEncoder.encode("admin"));
-            adminUser.setFullname("Administrator");
+//            adminUser.setPassword(passwordEncoder.encode("admin"));
+            adminUser.setPassword("admin");
+            adminUser.setFullname("Administrador");
             adminUser.setStatus(true);
             userService.save(adminUser);
             System.out.println("Admin user created successfully.");

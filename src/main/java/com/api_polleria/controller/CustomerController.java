@@ -1,8 +1,6 @@
 package com.api_polleria.controller;
 
-import com.api_polleria.dto.AddressDTO;
 import com.api_polleria.dto.CustomerDTO;
-import com.api_polleria.dto.RegisterCustomerDTO;
 import com.api_polleria.entity.Address;
 import com.api_polleria.entity.Customer;
 import com.api_polleria.entity.Product;
@@ -10,31 +8,26 @@ import com.api_polleria.entity.Status;
 import com.api_polleria.service.ConvertDTO;
 import com.api_polleria.service.CustomerService;
 import com.api_polleria.service.ProductService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.Optional;
 
 @RestController
 @RequestMapping("/customers")
 public class CustomerController {
 
-    @Autowired
-    private CustomerService customerService;
+    private final CustomerService customerService;
+    private final ProductService productService;
+    private final ConvertDTO convertDTO;
 
-    @Autowired
-    private ProductService productService;
-
-    @Autowired
-    private ConvertDTO convertDTO;
-
-    @Autowired
-    private PasswordEncoder passwordEncoder;
+    public CustomerController(CustomerService customerService, ProductService productService, ConvertDTO convertDTO) {
+        this.customerService = customerService;
+        this.productService = productService;
+        this.convertDTO = convertDTO;
+    }
 
     @GetMapping
     public ResponseEntity<?> findAll(Pageable pageable){
@@ -135,33 +128,23 @@ public class CustomerController {
     }
 
     @PostMapping("/{id}/address")
-    public ResponseEntity<?> addAddress(@PathVariable Long id, @RequestBody AddressDTO addressDTO){
+    public ResponseEntity<?> addAddress(@PathVariable Long id, @RequestBody Address address){
         Optional<Customer> optionalCustomer = customerService.findById(id);
         if (optionalCustomer.isEmpty()){
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("El cliente no existe");
         }
         Customer customer = optionalCustomer.get();
-        boolean addressExists = customer.getAddressList().stream()
-                .anyMatch(address -> address.getAddress().equals(addressDTO.getAddress()) &&
-                        address.getDistrict().equals(addressDTO.getDistrict()) &&
-                        address.getProvince().equals(addressDTO.getProvince()) &&
-                        address.getState().equals(addressDTO.getState()));
-        if (addressExists) {
+        if (customerService.addressExists(customer, null, address)) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("La direccion ya existe");
         }
-        Address newAddress = new Address();
-        newAddress.setAddress(addressDTO.getAddress());
-        newAddress.setDistrict(addressDTO.getDistrict());
-        newAddress.setProvince(addressDTO.getProvince());
-        newAddress.setState(addressDTO.getState());
-        newAddress.setCustomer(customer);
-        customer.getAddressList().add(newAddress);
+        address.setCustomer(customer);
+        customer.getAddressList().add(address);
         customerService.save(customer);
         return ResponseEntity.status(HttpStatus.CREATED).body("Direccion Agregada");
     }
 
     @PutMapping("/{id}/address/{addressId}")
-    public ResponseEntity<?> updateAddress(@PathVariable Long id, @PathVariable Long addressId, @RequestBody AddressDTO addressDTO){
+    public ResponseEntity<?> updateAddress(@PathVariable Long id, @PathVariable Long addressId, @RequestBody Address address){
         Optional<Customer> optionalCustomer = customerService.findById(id);
         if (optionalCustomer.isEmpty()){
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("El cliente no existe");
@@ -169,25 +152,19 @@ public class CustomerController {
         Customer customer = optionalCustomer.get();
         Optional<Address> optionalAddress = customer.getAddressList()
                 .stream()
-                .filter(address -> address.getId().equals(addressId))
+                .filter(addresses -> addresses.getId().equals(addressId))
                 .findFirst();
         if (optionalAddress.isEmpty()){
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("La direccion no existe");
         }
         Address addressToUpdate = optionalAddress.get();
-        boolean addressExists = customer.getAddressList().stream()
-                .filter(address -> !address.getId().equals(addressId))
-                .anyMatch(address -> address.getAddress().equals(addressDTO.getAddress()) &&
-                        address.getDistrict().equals(addressDTO.getDistrict()) &&
-                        address.getProvince().equals(addressDTO.getProvince()) &&
-                        address.getState().equals(addressDTO.getState()));
-        if (addressExists) {
+        if (customerService.addressExists(customer, addressId, address)) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("La direccion ya existe");
         }
-        addressToUpdate.setAddress(addressDTO.getAddress());
-        addressToUpdate.setDistrict(addressDTO.getDistrict());
-        addressToUpdate.setProvince(addressDTO.getProvince());
-        addressToUpdate.setState(addressDTO.getState());
+        addressToUpdate.setAddress(address.getAddress());
+        addressToUpdate.setDistrict(address.getDistrict());
+        addressToUpdate.setProvince(address.getProvince());
+        addressToUpdate.setState(address.getState());
         customerService.save(customer);
         return ResponseEntity.status(HttpStatus.CREATED).body("Direccion Actualizada");
     }
@@ -212,24 +189,36 @@ public class CustomerController {
         return ResponseEntity.status(HttpStatus.OK).body("Direccion Eliminada");
     }
 
-    @PostMapping("/change-password/{id}")
-    public ResponseEntity<?> changePassword(@PathVariable Long id, @RequestBody String newPassword) {
+    @PostMapping("/confirm/{id}")
+    public ResponseEntity<?> confirmAccount(@PathVariable Long id){
         Optional<Customer> optionalCustomer = customerService.findById(id);
-
-        if (optionalCustomer.isPresent()) {
-            Customer customer = optionalCustomer.get();
-
-            if (passwordEncoder.matches(newPassword, customer.getPassword())) {
-                return ResponseEntity.badRequest().body("La nueva contraseña no puede ser igual a la contraseña actual");
-            }
-
-            customer.setPassword(passwordEncoder.encode(newPassword));
-            customerService.save(customer);
-
-            return ResponseEntity.ok("Contraseña cambiada exitosamente");
-        } else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Usuario no encontrado");
+        if (optionalCustomer.isEmpty()){
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("El cliente no existe");
         }
+        Customer customer = optionalCustomer.get();
+        customer.setStatus(Status.ACTIVE);
+        customerService.save(customer);
+        return ResponseEntity.status(HttpStatus.OK).body("Usuario Confirmado");
     }
+
+//    @PostMapping("/change-password/{id}")
+//    public ResponseEntity<?> changePassword(@PathVariable Long id, @RequestBody String newPassword) {
+//        Optional<Customer> optionalCustomer = customerService.findById(id);
+//
+//        if (optionalCustomer.isPresent()) {
+//            Customer customer = optionalCustomer.get();
+//
+//            if (passwordEncoder.matches(newPassword, customer.getPassword())) {
+//                return ResponseEntity.badRequest().body("La nueva contraseña no puede ser igual a la contraseña actual");
+//            }
+//
+//            customer.setPassword(passwordEncoder.encode(newPassword));
+//            customerService.save(customer);
+//
+//            return ResponseEntity.ok("Contraseña cambiada exitosamente");
+//        } else {
+//            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Usuario no encontrado");
+//        }
+//    }
 
 }

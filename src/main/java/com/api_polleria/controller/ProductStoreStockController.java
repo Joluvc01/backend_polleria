@@ -7,7 +7,6 @@ import com.api_polleria.entity.Store;
 import com.api_polleria.service.ProductService;
 import com.api_polleria.service.ProductStoreStockService;
 import com.api_polleria.service.StoreService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -18,14 +17,15 @@ import java.util.Optional;
 @RequestMapping("/stock")
 public class ProductStoreStockController {
 
-    @Autowired
-    private ProductService productService;
+    private final ProductService productService;
+    private final StoreService storeService;
+    private final ProductStoreStockService productStoreStockService;
 
-    @Autowired
-    private StoreService storeService;
-
-    @Autowired
-    private ProductStoreStockService productStoreStockService;
+    public ProductStoreStockController(ProductService productService, StoreService storeService, ProductStoreStockService productStoreStockService) {
+        this.productService = productService;
+        this.storeService = storeService;
+        this.productStoreStockService = productStoreStockService;
+    }
 
     @PostMapping
     public ResponseEntity<?> create(@RequestBody ProductStoreStockDTO productStoreStockDTO) {
