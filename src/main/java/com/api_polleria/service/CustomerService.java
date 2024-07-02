@@ -6,9 +6,13 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.userdetails.UserDetailsService;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface CustomerService extends UserDetailsService {
+
+    List<Customer> findAllList();
+
     public Page<Customer> findAll(Pageable pageable);
 
     public Optional<Customer> findById(Long id);

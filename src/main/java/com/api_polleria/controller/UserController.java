@@ -35,6 +35,7 @@ public class UserController {
     public ResponseEntity<?> findAll(@RequestParam(required = false) Boolean status,
                                      @RequestParam(required = false) String name,
                                      Pageable pageable) {
+
         List<User> userList = userService.findAll(pageable).getContent();
 
         if (status != null) {

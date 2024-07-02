@@ -42,7 +42,7 @@ public class CustomerController {
             @RequestParam(required = false) String name,
             Pageable pageable){
 
-        List<Customer> customerList = customerService.findAll(pageable).getContent();
+        List<Customer> customerList = customerService.findAllList();
 
         if (status != null){
             customerList = customerList.stream()
