@@ -8,12 +8,16 @@ import com.api_polleria.entity.Status;
 import com.api_polleria.service.ConvertDTO;
 import com.api_polleria.service.CustomerService;
 import com.api_polleria.service.ProductService;
+import com.api_polleria.service.UtilsService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/customers")
@@ -22,17 +26,36 @@ public class CustomerController {
     private final CustomerService customerService;
     private final ProductService productService;
     private final ConvertDTO convertDTO;
+    private final UtilsService utilService;
 
-    public CustomerController(CustomerService customerService, ProductService productService, ConvertDTO convertDTO) {
+    public CustomerController(CustomerService customerService, ProductService productService, ConvertDTO convertDTO, UtilsService utilService) {
         this.customerService = customerService;
         this.productService = productService;
         this.convertDTO = convertDTO;
+        this.utilService = utilService;
     }
 
     @GetMapping
-    public ResponseEntity<?> findAll(Pageable pageable){
-        Page<Customer> customerPage = customerService.findAll(pageable);
-        return ResponseEntity.status(HttpStatus.OK).body(customerPage.map(convertDTO::convertToCustomerDTO));
+    public ResponseEntity<?> findAll(
+            @RequestParam(required = false) Status status,
+            @RequestParam(required = false) String name,
+            Pageable pageable){
+
+        List<Customer> customerList = customerService.findAll(pageable).getContent();
+
+        if (status != null){
+            customerList = customerList.stream()
+                    .filter(customer -> customer.getStatus().equals(status))
+                    .collect(Collectors.toList());
+        }
+
+        if (name != null && !name.isEmpty()){
+            customerList = customerList.stream()
+                    .filter(customer -> (customer.getName() + " " + customer.getLastname()).toLowerCase().contains(name.toLowerCase()))
+                    .collect(Collectors.toList());
+        }
+
+        return utilService.createPageResponse(customerList, pageable, convertDTO::convertToCustomerDTO);
     }
 
     @GetMapping("/{id}")
@@ -53,7 +76,7 @@ public class CustomerController {
         customer.setLastname(customerDTO.getLastname());
         customer.setEmail(customerDTO.getEmail());
         customer.setBirthdate(customerDTO.getBirthdate());
-        customer.setStatus(Status.valueOf(customerDTO.getStatus()));
+        customer.setStatus(optionalCustomer.get().getStatus());
         customerService.save(customer);
         return ResponseEntity.status(HttpStatus.CREATED).body("Cliente Actualizado");
     }

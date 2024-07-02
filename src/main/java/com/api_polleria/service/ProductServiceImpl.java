@@ -41,16 +41,6 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public List<Product> findByNameContaining(String contain) {
-        return productRepository.findByNameContaining(contain);
-    }
-
-    @Override
-    public List<Product> findByCategoryList_Name(String category) {
-        return productRepository.findByCategoryList_Name(category);
-    }
-
-    @Override
     public Product save(Product product) {
         return productRepository.save(product);
     }

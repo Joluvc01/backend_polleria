@@ -4,12 +4,15 @@ import com.api_polleria.dto.UserDTO;
 import com.api_polleria.entity.User;
 import com.api_polleria.service.ConvertDTO;
 import com.api_polleria.service.UserService;
+import com.api_polleria.service.UtilsService;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Function;
 
 
 @RestController
@@ -17,21 +20,28 @@ import java.util.Optional;
 public class UserController {
 
     private final UserService userService;
-
     private final ConvertDTO convertDTO;
+    private final UtilsService utilsService;
 
-    public UserController(UserService userService, ConvertDTO convertDTO) {
+    public UserController(UserService userService, ConvertDTO convertDTO, UtilsService utilsService) {
         this.userService = userService;
         this.convertDTO = convertDTO;
+        this.utilsService = utilsService;
     }
 
     @GetMapping()
-    public ResponseEntity<?> findAll() {
-        List<User> users = userService.findAll();
-        List<UserDTO> userDTOs = users.stream()
-                .map(convertDTO::convertToUserDTO)
-                .toList();
-        return ResponseEntity.ok(userDTOs);
+    public ResponseEntity<?> findAll(@RequestParam(required = false) Boolean status,
+                                     Pageable pageable) {
+        List<User> userList = userService.findAll(pageable).getContent();
+
+        if (status != null) {
+            userList = userList.stream()
+                    .filter(user -> user.getStatus().equals(status))
+                    .toList();
+        }
+
+        return utilsService.createPageResponse(userList, pageable, Function.identity());
+
     }
 
     @GetMapping("/{id}")

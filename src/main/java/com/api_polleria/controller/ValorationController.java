@@ -23,11 +23,8 @@ import java.util.Optional;
 public class ValorationController {
 
     private final ValorationService valorationService;
-
     private final ProductService productService;
-
     private final CustomerService customerService;
-
     private final ConvertDTO convertDTO;
 
     public ValorationController(ValorationService valorationService, ProductService productService, CustomerService customerService, ConvertDTO convertDTO) {

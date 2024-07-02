@@ -25,20 +25,31 @@ public class PurchaseController {
     private final StoreService storeService;
     private final ProductStoreStockService productStoreStockService;
     private final ConvertDTO convertDTO;
+    private final UtilsService utilsService;
 
-    public PurchaseController(PurchaseService purchaseService, CustomerService customerService, ProductService productService, StoreService storeService, ProductStoreStockService productStoreStockService, ConvertDTO convertDTO) {
+    public PurchaseController(PurchaseService purchaseService, CustomerService customerService, ProductService productService, StoreService storeService, ProductStoreStockService productStoreStockService, ConvertDTO convertDTO, UtilsService utilsService) {
         this.purchaseService = purchaseService;
         this.customerService = customerService;
         this.productService = productService;
         this.storeService = storeService;
         this.productStoreStockService = productStoreStockService;
         this.convertDTO = convertDTO;
+        this.utilsService = utilsService;
     }
 
     @GetMapping
-    public ResponseEntity<?> findAll(Pageable pageable){
-        Page<Purchase> purchasePage = purchaseService.findAll(pageable);
-        return ResponseEntity.ok().body(purchasePage.map(convertDTO::convertToPurchaseDTO));
+    public ResponseEntity<?> findAll(
+            @RequestParam(required = false) Boolean status,
+            Pageable pageable){
+        List<Purchase> purchaseList = purchaseService.findAll(pageable).getContent();
+
+        if (status != null) {
+            purchaseList = purchaseList.stream()
+                    .filter(purchase -> purchase.getStatus().equals(status))
+                    .toList();
+        }
+
+        return utilsService.createPageResponse(purchaseList, pageable, convertDTO::convertToPurchaseDTO);
     }
 
     @GetMapping("/{id}")

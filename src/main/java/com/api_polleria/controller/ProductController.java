@@ -5,10 +5,7 @@ import com.api_polleria.dto.StockDTO;
 import com.api_polleria.entity.Category;
 import com.api_polleria.entity.Product;
 import com.api_polleria.entity.ProductStoreStock;
-import com.api_polleria.service.CategoryService;
-import com.api_polleria.service.ConvertDTO;
-import com.api_polleria.service.ProductService;
-import com.api_polleria.service.ProductStoreStockService;
+import com.api_polleria.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -24,25 +21,18 @@ import java.util.stream.Collectors;
 @RequestMapping("/products")
 public class ProductController {
 
-    @Autowired
-    private ProductService productService;
+    private final ProductService productService;
+    private final CategoryService categoryService;
+    private final ProductStoreStockService productStoreStockService;
+    private final UtilsService utilsService;
+    private final ConvertDTO convertDTO;
 
-    @Autowired
-    private CategoryService categoryService;
-
-    @Autowired
-    private ProductStoreStockService productStoreStockService;
-
-    @Autowired
-    private ConvertDTO convertDTO;
-
-    private ResponseEntity<Page<ProductDTO>> createProductPageResponse(List<Product> productList, Pageable pageable) {
-        int start = (int) pageable.getOffset();
-        int end = Math.min((start + pageable.getPageSize()), productList.size());
-        List<Product> subList = productList.subList(start, end);
-        Page<Product> productPage = new PageImpl<>(subList, PageRequest.of(pageable.getPageNumber(), pageable.getPageSize()), productList.size());
-        Page<ProductDTO> productDTOPage = productPage.map(convertDTO::convertToProductDTO);
-        return ResponseEntity.status(HttpStatus.OK).body(productDTOPage);
+    public ProductController(ProductService productService, CategoryService categoryService, ProductStoreStockService productStoreStockService, UtilsService utilsService, ConvertDTO convertDTO) {
+        this.productService = productService;
+        this.categoryService = categoryService;
+        this.productStoreStockService = productStoreStockService;
+        this.utilsService = utilsService;
+        this.convertDTO = convertDTO;
     }
 
     private List<Category> getCategoryListFromNames(Set<String> categoryNames) {
@@ -59,28 +49,23 @@ public class ProductController {
 
     @GetMapping
     public ResponseEntity<?> findAll(
+            @RequestParam(required = false) Boolean status,
             @RequestParam(required = false) String category,
-            @RequestParam(required = false) String product,
             @RequestParam(required = false) String partialProduct,
             Pageable pageable) {
 
-        if (product != null && !product.isEmpty()) {
-            Product prod = productService.findByName(product);
-            if (prod == null) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No existe un producto con ese nombre");
-            }
-            return createProductPageResponse(Collections.singletonList(prod), pageable);
+        List<Product> productList = productService.findAll(pageable).getContent();
+
+        if (status != null) {
+            productList = productList.stream()
+                    .filter(p -> p.getStatus().equals(status))
+                    .collect(Collectors.toList());
         }
 
-        List<Product> productList;
-
         if (partialProduct != null && !partialProduct.isEmpty()) {
-            productList = productService.findByNameContaining(partialProduct);
-        } else if (category != null && !category.isEmpty()) {
-            productList = productService.findByCategoryList_Name(category);
-        } else {
-            Page<Product> productPage = productService.findAll(pageable);
-            return ResponseEntity.status(HttpStatus.OK).body(productPage.map(convertDTO::convertToProductDTO));
+            productList = productList.stream()
+                    .filter(p -> p.getName().contains(partialProduct))
+                    .collect(Collectors.toList());
         }
 
         if (category != null && !category.isEmpty()) {
@@ -89,7 +74,7 @@ public class ProductController {
                     .collect(Collectors.toList());
         }
 
-        return createProductPageResponse(productList, pageable);
+        return utilsService.createPageResponse(productList, pageable, convertDTO::convertToProductDTO);
     }
 
     @GetMapping("/{id}")

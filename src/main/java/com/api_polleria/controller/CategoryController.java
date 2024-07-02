@@ -2,23 +2,44 @@ package com.api_polleria.controller;
 
 import com.api_polleria.entity.Category;
 import com.api_polleria.service.CategoryService;
+import com.api_polleria.service.ConvertDTO;
+import com.api_polleria.service.UtilsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 import java.util.Optional;
+import java.util.function.Function;
 
 @RestController
 @RequestMapping("/categories")
 public class CategoryController {
 
-    @Autowired
-    private CategoryService categoryService;
+    private final CategoryService categoryService;
+    private final UtilsService utilsService;
+
+    public CategoryController(CategoryService categoryService, UtilsService utilsService) {
+        this.categoryService = categoryService;
+        this.utilsService = utilsService;
+    }
 
     @GetMapping
-    public ResponseEntity<?> findAll(Pageable pageable) {
-        return ResponseEntity.status(HttpStatus.OK).body(categoryService.findAll(pageable));
+    public ResponseEntity<?> findAll(
+            @RequestParam(required = false) Boolean status,
+            Pageable pageable) {
+
+        List<Category> categoryList = categoryService.findAll(pageable).getContent();
+
+        if (status != null) {
+            categoryList = categoryList.stream()
+                    .filter(category -> category.getStatus().equals(status))
+                    .toList();
+        }
+
+        return utilsService.createPageResponse(categoryList, pageable, Function.identity());
     }
 
     @GetMapping("/{id}")
