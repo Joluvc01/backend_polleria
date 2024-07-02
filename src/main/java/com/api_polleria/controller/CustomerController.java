@@ -16,6 +16,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -224,24 +225,22 @@ public class CustomerController {
         return ResponseEntity.status(HttpStatus.OK).body("Usuario Confirmado");
     }
 
-//    @PostMapping("/change-password/{id}")
-//    public ResponseEntity<?> changePassword(@PathVariable Long id, @RequestBody String newPassword) {
-//        Optional<Customer> optionalCustomer = customerService.findById(id);
-//
-//        if (optionalCustomer.isPresent()) {
-//            Customer customer = optionalCustomer.get();
-//
-//            if (passwordEncoder.matches(newPassword, customer.getPassword())) {
-//                return ResponseEntity.badRequest().body("La nueva contraseña no puede ser igual a la contraseña actual");
-//            }
-//
-//            customer.setPassword(passwordEncoder.encode(newPassword));
-//            customerService.save(customer);
-//
-//            return ResponseEntity.ok("Contraseña cambiada exitosamente");
-//        } else {
-//            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Usuario no encontrado");
-//        }
-//    }
+    @PostMapping("/change-password/{id}")
+    public ResponseEntity<?> changePassword(@PathVariable Long id, @RequestBody String newPassword) {
+        Optional<Customer> optionalCustomer = customerService.findById(id);
+
+        if (optionalCustomer.isPresent()) {
+            Customer customer = optionalCustomer.get();
+            if (Objects.equals(newPassword, customer.getPassword())){
+                return ResponseEntity.badRequest().body("La nueva contraseña no puede ser igual a la contraseña actual");
+            }
+
+            customer.setPassword(newPassword);
+            customerService.save(customer);
+            return ResponseEntity.ok("Contraseña cambiada exitosamente");
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Usuario no encontrado");
+        }
+    }
 
 }

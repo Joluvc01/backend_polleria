@@ -65,7 +65,7 @@ public class UserController {
         newuser.setPassword(user.getPassword());
         newuser.setFullname(user.getFullname());
         newuser.setStatus(true);
-
+        userService.save(newuser);
         return ResponseEntity.status(HttpStatus.CREATED).body("Usuario Creado");
     }
 
@@ -80,6 +80,7 @@ public class UserController {
         existingUser.setUsername(userDTO.getUsername());
         existingUser.setFullname(userDTO.getFullname());
         existingUser.setStatus(userDTO.getStatus());
+        userService.save(existingUser);
         return ResponseEntity.ok("Usuario Actualizado");
     }
 
