@@ -11,8 +11,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 
 @RestController
@@ -31,6 +33,7 @@ public class UserController {
 
     @GetMapping()
     public ResponseEntity<?> findAll(@RequestParam(required = false) Boolean status,
+                                     @RequestParam(required = false) String name,
                                      Pageable pageable) {
         List<User> userList = userService.findAll(pageable).getContent();
 
@@ -38,6 +41,12 @@ public class UserController {
             userList = userList.stream()
                     .filter(user -> user.getStatus().equals(status))
                     .toList();
+        }
+
+        if (name != null && !name.isEmpty()){
+            userList = userList.stream()
+                    .filter(customer -> (customer.getName() + " " + customer.getLastname()).toLowerCase().contains(name.toLowerCase()))
+                    .collect(Collectors.toList());
         }
 
         return utilsService.createPageResponse(userList, pageable, Function.identity());
@@ -61,9 +70,9 @@ public class UserController {
 
         User newuser = new User();
         newuser.setUsername(user.getUsername());
-//        newuser.setPassword(passwordEncoder.encode(user.getPassword()));
         newuser.setPassword(user.getPassword());
-        newuser.setFullname(user.getFullname());
+        newuser.setName(user.getName());
+        newuser.setLastname(user.getLastname());
         newuser.setStatus(true);
         userService.save(newuser);
         return ResponseEntity.status(HttpStatus.CREATED).body("Usuario Creado");
@@ -78,7 +87,8 @@ public class UserController {
         }
         User existingUser = optionalUser.get();
         existingUser.setUsername(userDTO.getUsername());
-        existingUser.setFullname(userDTO.getFullname());
+        existingUser.setName(userDTO.getName());
+        existingUser.setLastname(userDTO.getLastname());
         existingUser.setStatus(userDTO.getStatus());
         userService.save(existingUser);
         return ResponseEntity.ok("Usuario Actualizado");
@@ -97,24 +107,24 @@ public class UserController {
         }
     }
 
-//    @PostMapping("/change-password/{id}")
-//    public ResponseEntity<?> changePassword(@PathVariable Long id, @RequestBody String newPassword) {
-//        Optional<User> optionalUser = userService.findById(id);
-//
-//        if (optionalUser.isPresent()) {
-//            User user = optionalUser.get();
-//
-//            if (passwordEncoder.matches(newPassword, user.getPassword())) {
-//                return ResponseEntity.badRequest().body("La nueva contraseña no puede ser igual a la contraseña actual");
-//            }
-//
-//            user.setPassword(passwordEncoder.encode(newPassword));
-//            userService.save(user);
-//
-//            return ResponseEntity.ok("Contraseña cambiada exitosamente");
-//        } else {
-//            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Usuario no encontrado");
-//        }
-//    }
+    @PostMapping("/change-password/{id}")
+    public ResponseEntity<?> changePassword(@PathVariable Long id, @RequestBody String newPassword) {
+        Optional<User> optionalUser = userService.findById(id);
+
+        if (optionalUser.isPresent()) {
+            User user = optionalUser.get();
+
+            if (Objects.equals(newPassword, user.getPassword())) {
+                return ResponseEntity.badRequest().body("La nueva contraseña no puede ser igual a la contraseña actual");
+            }
+
+            user.setPassword(newPassword);
+            userService.save(user);
+
+            return ResponseEntity.ok("Contraseña cambiada exitosamente");
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Usuario no encontrado");
+        }
+    }
 }
 

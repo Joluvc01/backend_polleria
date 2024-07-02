@@ -32,7 +32,10 @@ public class User implements UserDetails {
     private String password;
 
     @NotEmpty
-    private String fullname;
+    private String name;
+
+    @NotEmpty
+    private String lastname;
 
     @NotNull
     private Boolean status;

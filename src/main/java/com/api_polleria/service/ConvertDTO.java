@@ -93,7 +93,8 @@ public class ConvertDTO {
         return new UserDTO(
                 user.getId(),
                 user.getUsername(),
-                user.getFullname(),
+                user.getName(),
+                user.getLastname(),
                 user.getStatus()
         );
     }
