@@ -5,22 +5,17 @@ import com.api_polleria.entity.Address;
 import com.api_polleria.entity.Customer;
 import com.api_polleria.entity.Product;
 import com.api_polleria.entity.Status;
-import com.api_polleria.repository.CustomerRepository;
 import com.api_polleria.service.ConvertDTO;
 import com.api_polleria.service.CustomerService;
 import com.api_polleria.service.ProductService;
-import com.api_polleria.service.UtilsService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
 import org.springframework.data.jpa.domain.Specification;
 import jakarta.persistence.criteria.Expression;
 import jakarta.persistence.criteria.Predicate;
-
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -41,7 +36,7 @@ public class CustomerController {
     }
 
     @GetMapping
-    public ResponseEntity<Page<Customer>> findAll(@RequestParam(required = false) Status status,
+    public ResponseEntity<?> findAll(@RequestParam(required = false) Status status,
                                                   @RequestParam(required = false) String name,
                                                   Pageable pageable) {
 
@@ -64,7 +59,8 @@ public class CustomerController {
         };
 
         Page<Customer> customerPage = customerService.findAll(spec, pageable);
-        return ResponseEntity.ok(customerPage);
+        Page<CustomerDTO> dtoPage = customerPage.map(convertDTO::convertToCustomerDTO);
+        return ResponseEntity.ok(dtoPage);
     }
 
 

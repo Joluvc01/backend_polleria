@@ -8,6 +8,7 @@ import java.util.Optional;
 public interface ValorationService {
 
     public Optional<Valoration> findById(Long id);
+
     public Page<Valoration> findByProductId(Long productId, Pageable pageable);
 
     public Valoration save(Valoration valoration);

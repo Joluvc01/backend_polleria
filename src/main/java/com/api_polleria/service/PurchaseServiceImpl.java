@@ -5,6 +5,7 @@ import com.api_polleria.repository.PurchaseRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -16,7 +17,7 @@ public class PurchaseServiceImpl implements PurchaseService{
     private PurchaseRepository purchaseRepository;
 
     @Override
-    public Page<Purchase> findAll(Pageable pageable) {
+    public Page<Purchase> findAll(Specification<Purchase> spec, Pageable pageable) {
         return purchaseRepository.findAll(pageable);
     }
 

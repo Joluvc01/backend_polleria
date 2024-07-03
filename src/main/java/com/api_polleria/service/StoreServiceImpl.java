@@ -5,6 +5,7 @@ import com.api_polleria.repository.StoreRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -16,7 +17,7 @@ public class StoreServiceImpl implements StoreService {
     private StoreRepository storeRepository;
 
     @Override
-    public Page<Store> findAll(Pageable pageable) {
+    public Page<Store> findAll(Specification<Store> spec, Pageable pageable) {
         return storeRepository.findAll(pageable);
     }
 

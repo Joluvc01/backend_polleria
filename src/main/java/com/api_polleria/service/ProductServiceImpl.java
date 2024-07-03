@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -19,7 +20,7 @@ public class ProductServiceImpl implements ProductService {
     private ProductRepository productRepository;
 
     @Override
-    public Page<Product> findAll(Pageable pageable) {
+    public Page<Product> findAll(Specification<Product> spec, Pageable pageable) {
         Page<Product> productPage = productRepository.findAll(pageable);
         List<Product> products = productPage.getContent();
         for (Product product : products) {

@@ -6,11 +6,13 @@ import com.api_polleria.entity.Category;
 import com.api_polleria.entity.Product;
 import com.api_polleria.entity.ProductStoreStock;
 import com.api_polleria.service.*;
+import jakarta.persistence.criteria.Predicate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -24,14 +26,12 @@ public class ProductController {
     private final ProductService productService;
     private final CategoryService categoryService;
     private final ProductStoreStockService productStoreStockService;
-    private final UtilsService utilsService;
     private final ConvertDTO convertDTO;
 
-    public ProductController(ProductService productService, CategoryService categoryService, ProductStoreStockService productStoreStockService, UtilsService utilsService, ConvertDTO convertDTO) {
+    public ProductController(ProductService productService, CategoryService categoryService, ProductStoreStockService productStoreStockService, ConvertDTO convertDTO) {
         this.productService = productService;
         this.categoryService = categoryService;
         this.productStoreStockService = productStoreStockService;
-        this.utilsService = utilsService;
         this.convertDTO = convertDTO;
     }
 
@@ -54,27 +54,27 @@ public class ProductController {
             @RequestParam(required = false) String partialProduct,
             Pageable pageable) {
 
-        List<Product> productList = productService.findAll(pageable).getContent();
+        Specification<Product> spec = (root, query, cb) -> {
+            List<Predicate> predicates = new ArrayList<>();
 
-        if (status != null) {
-            productList = productList.stream()
-                    .filter(p -> p.getStatus().equals(status))
-                    .collect(Collectors.toList());
-        }
+            if (status != null) {
+                predicates.add(cb.equal(root.get("status"), status));
+            }
 
-        if (partialProduct != null && !partialProduct.isEmpty()) {
-            productList = productList.stream()
-                    .filter(p -> p.getName().contains(partialProduct))
-                    .collect(Collectors.toList());
-        }
+            if (category != null) {
+                predicates.add(cb.isMember(category, root.get("categoryList")));
+            }
 
-        if (category != null && !category.isEmpty()) {
-            productList = productList.stream()
-                    .filter(p -> p.getCategoryList().stream().anyMatch(c -> c.getName().equals(category)))
-                    .collect(Collectors.toList());
-        }
+            if (partialProduct != null) {
+                predicates.add(cb.like(root.get("name"), "%" + partialProduct + "%"));
+            }
 
-        return utilsService.createPageResponse(productList, pageable, convertDTO::convertToProductDTO);
+            return cb.and(predicates.toArray(new Predicate[0]));
+        };
+        Page<Product> productPage = productService.findAll(spec, pageable);
+        Page<ProductDTO> dtoPage = productPage.map(convertDTO::convertToProductDTO);
+        return ResponseEntity.ok(dtoPage);
+
     }
 
     @GetMapping("/{id}")

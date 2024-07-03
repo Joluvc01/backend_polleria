@@ -2,8 +2,9 @@ package com.api_polleria.controller;
 
 import com.api_polleria.entity.Store;
 import com.api_polleria.service.StoreService;
-import com.api_polleria.service.UtilsService;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -17,27 +18,26 @@ import java.util.function.Function;
 public class StoreController {
 
     private final StoreService storeService;
-    private final UtilsService utilsService;
 
-    public StoreController(StoreService storeService, UtilsService utilsService) {
+    public StoreController(StoreService storeService) {
         this.storeService = storeService;
-        this.utilsService = utilsService;
     }
 
     @GetMapping
     public ResponseEntity<?> findAll(
-            @RequestParam (required = false) Boolean status,
+            @RequestParam(required = false) Boolean status,
             Pageable pageable) {
 
-        List<Store> storeList = storeService.findAll(pageable).getContent();
+        Specification<Store> spec = (root, query, cb) -> {
+            if (status == null) {
+                return cb.isTrue(cb.literal(true));
+            } else {
+                return cb.equal(root.get("status"), status);
+            }
+        };
 
-        if (status != null) {
-            storeList = storeList.stream()
-                    .filter(store -> store.getStatus().equals(status))
-                    .toList();
-        }
-
-        return utilsService.createPageResponse(storeList, pageable, Function.identity());
+        Page<Store> storePage = storeService.findAll(spec, pageable);
+        return ResponseEntity.ok(storePage);
     }
 
     @GetMapping("/{id}")

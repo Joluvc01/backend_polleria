@@ -5,8 +5,10 @@ import com.api_polleria.dto.PurchaseDTO;
 import com.api_polleria.dto.Purchase_detailDTO;
 import com.api_polleria.entity.*;
 import com.api_polleria.service.*;
+import jakarta.persistence.criteria.Predicate;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -25,31 +27,45 @@ public class PurchaseController {
     private final StoreService storeService;
     private final ProductStoreStockService productStoreStockService;
     private final ConvertDTO convertDTO;
-    private final UtilsService utilsService;
 
-    public PurchaseController(PurchaseService purchaseService, CustomerService customerService, ProductService productService, StoreService storeService, ProductStoreStockService productStoreStockService, ConvertDTO convertDTO, UtilsService utilsService) {
+    public PurchaseController(PurchaseService purchaseService, CustomerService customerService, ProductService productService, StoreService storeService, ProductStoreStockService productStoreStockService, ConvertDTO convertDTO) {
         this.purchaseService = purchaseService;
         this.customerService = customerService;
         this.productService = productService;
         this.storeService = storeService;
         this.productStoreStockService = productStoreStockService;
         this.convertDTO = convertDTO;
-        this.utilsService = utilsService;
     }
 
     @GetMapping
     public ResponseEntity<?> findAll(
             @RequestParam(required = false) Boolean status,
+            @RequestParam(required = false) LocalDate startDate,
+            @RequestParam(required = false) LocalDate endDate,
             Pageable pageable){
-        List<Purchase> purchaseList = purchaseService.findAll(pageable).getContent();
 
-        if (status != null) {
-            purchaseList = purchaseList.stream()
-                    .filter(purchase -> purchase.getStatus().equals(status))
-                    .toList();
-        }
+        Specification<Purchase> spec = (root, query, cb) -> {
+            List<Predicate> predicates = new ArrayList<>();
 
-        return utilsService.createPageResponse(purchaseList, pageable, convertDTO::convertToPurchaseDTO);
+            if (status != null) {
+                predicates.add(cb.equal(root.get("status"), status));
+            }
+
+            if (startDate != null) {
+                predicates.add(cb.greaterThanOrEqualTo(root.get("date"), startDate));
+            }
+
+            if (endDate != null) {
+                predicates.add(cb.lessThanOrEqualTo(root.get("date"), endDate));
+            }
+
+            return cb.and(predicates.toArray(new Predicate[0]));
+
+        };
+
+        Page<Purchase> purchasePage = purchaseService.findAll(spec, pageable);
+        Page<PurchaseDTO> purchaseDTOPage = purchasePage.map(convertDTO::convertToPurchaseDTO);
+        return ResponseEntity.ok(purchaseDTOPage);
     }
 
     @GetMapping("/{id}")

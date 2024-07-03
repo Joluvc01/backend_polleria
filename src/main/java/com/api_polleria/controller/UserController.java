@@ -4,12 +4,16 @@ import com.api_polleria.dto.UserDTO;
 import com.api_polleria.entity.User;
 import com.api_polleria.service.ConvertDTO;
 import com.api_polleria.service.UserService;
-import com.api_polleria.service.UtilsService;
+import jakarta.persistence.criteria.Expression;
+import jakarta.persistence.criteria.Predicate;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -23,12 +27,10 @@ public class UserController {
 
     private final UserService userService;
     private final ConvertDTO convertDTO;
-    private final UtilsService utilsService;
 
-    public UserController(UserService userService, ConvertDTO convertDTO, UtilsService utilsService) {
+    public UserController(UserService userService, ConvertDTO convertDTO) {
         this.userService = userService;
         this.convertDTO = convertDTO;
-        this.utilsService = utilsService;
     }
 
     @GetMapping()
@@ -36,23 +38,28 @@ public class UserController {
                                      @RequestParam(required = false) String name,
                                      Pageable pageable) {
 
-        List<User> userList = userService.findAll(pageable).getContent();
+        Specification<User> spec = (root, query, cb) -> {
+            List<Predicate> predicates = new ArrayList<>();
 
-        if (status != null) {
-            userList = userList.stream()
-                    .filter(user -> user.getStatus().equals(status))
-                    .toList();
-        }
+            if (status != null) {
+                predicates.add(cb.equal(root.get("status"), status));
+            }
 
-        if (name != null && !name.isEmpty()){
-            userList = userList.stream()
-                    .filter(customer -> (customer.getName() + " " + customer.getLastname()).toLowerCase().contains(name.toLowerCase()))
-                    .collect(Collectors.toList());
-        }
+            if (name != null && !name.isEmpty()) {
+                String pattern = "%" + name.toLowerCase() + "%";
+                Expression<String> fullName = cb.concat(cb.concat(cb.lower(root.get("name")), " "), cb.lower(root.get("lastname")));
+                predicates.add(cb.or(
+                        cb.like(fullName, pattern)
+                ));
+            }
+            return cb.and(predicates.toArray(new Predicate[0]));
+        };
 
-        return utilsService.createPageResponse(userList, pageable, Function.identity());
-
+        Page<User> userPage = userService.findAll(spec, pageable);
+        Page<UserDTO> userDTOPage = userPage.map(convertDTO::convertToUserDTO);
+        return ResponseEntity.ok(userDTOPage);
     }
+
 
     @GetMapping("/{id}")
     public ResponseEntity<?> findById(@PathVariable Long id) {
