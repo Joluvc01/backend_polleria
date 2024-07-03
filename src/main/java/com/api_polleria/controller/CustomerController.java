@@ -5,6 +5,7 @@ import com.api_polleria.entity.Address;
 import com.api_polleria.entity.Customer;
 import com.api_polleria.entity.Product;
 import com.api_polleria.entity.Status;
+import com.api_polleria.repository.CustomerRepository;
 import com.api_polleria.service.ConvertDTO;
 import com.api_polleria.service.CustomerService;
 import com.api_polleria.service.ProductService;
@@ -15,10 +16,15 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import org.springframework.data.jpa.domain.Specification;
+import jakarta.persistence.criteria.Expression;
+import jakarta.persistence.criteria.Predicate;
+
+
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/customers")
@@ -27,37 +33,40 @@ public class CustomerController {
     private final CustomerService customerService;
     private final ProductService productService;
     private final ConvertDTO convertDTO;
-    private final UtilsService utilService;
 
-    public CustomerController(CustomerService customerService, ProductService productService, ConvertDTO convertDTO, UtilsService utilService) {
+    public CustomerController(CustomerService customerService, ProductService productService, ConvertDTO convertDTO) {
         this.customerService = customerService;
         this.productService = productService;
         this.convertDTO = convertDTO;
-        this.utilService = utilService;
     }
 
     @GetMapping
-    public ResponseEntity<?> findAll(
-            @RequestParam(required = false) Status status,
-            @RequestParam(required = false) String name,
-            Pageable pageable){
+    public ResponseEntity<Page<Customer>> findAll(@RequestParam(required = false) Status status,
+                                                  @RequestParam(required = false) String name,
+                                                  Pageable pageable) {
 
-        List<Customer> customerList = customerService.findAllList();
+        Specification<Customer> spec = (root, query, cb) -> {
+            List<Predicate> predicates = new ArrayList<>();
 
-        if (status != null){
-            customerList = customerList.stream()
-                    .filter(customer -> customer.getStatus().equals(status))
-                    .collect(Collectors.toList());
-        }
+            if (status != null) {
+                predicates.add(cb.equal(root.get("status"), status));
+            }
 
-        if (name != null && !name.isEmpty()){
-            customerList = customerList.stream()
-                    .filter(customer -> (customer.getName() + " " + customer.getLastname()).toLowerCase().contains(name.toLowerCase()))
-                    .collect(Collectors.toList());
-        }
+            if (name != null && !name.isEmpty()) {
+                String pattern = "%" + name.toLowerCase() + "%";
+                Expression<String> fullName = cb.concat(cb.concat(cb.lower(root.get("name")), " "), cb.lower(root.get("lastname")));
+                predicates.add(cb.or(
+                        cb.like(fullName, pattern)
+                ));
+            }
 
-        return utilService.createPageResponse(customerList, pageable, convertDTO::convertToCustomerDTO);
+            return cb.and(predicates.toArray(new Predicate[0]));
+        };
+
+        Page<Customer> customerPage = customerService.findAll(spec, pageable);
+        return ResponseEntity.ok(customerPage);
     }
+
 
     @GetMapping("/{id}")
     public ResponseEntity<?> findById(@PathVariable Long id){

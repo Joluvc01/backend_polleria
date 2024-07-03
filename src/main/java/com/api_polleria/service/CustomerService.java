@@ -4,6 +4,7 @@ import com.api_polleria.entity.Address;
 import com.api_polleria.entity.Customer;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.core.userdetails.UserDetailsService;
 
 import java.util.List;
@@ -11,9 +12,7 @@ import java.util.Optional;
 
 public interface CustomerService extends UserDetailsService {
 
-    List<Customer> findAllList();
-
-    public Page<Customer> findAll(Pageable pageable);
+    public Page<Customer> findAll(Specification<Customer> spec, Pageable pageable);
 
     public Optional<Customer> findById(Long id);
 
